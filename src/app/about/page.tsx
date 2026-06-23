@@ -78,7 +78,7 @@ export default function AboutPage() {
           <p className="text-white/60 text-lg max-w-2xl mx-auto font-serif italic">
             &ldquo;We do not produce fashion; we assemble physical architecture for the body.&rdquo;
           </p>
-          <p className="text-[#c9a96e] text-sm mt-3">— Sweety, Founder</p>
+          <p className="text-[#c9a96e] text-sm mt-3">— Sweety Chauhan, Founder</p>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-4 text-[#3a3a3a] leading-relaxed">
               <p>
-                Elyara was founded in Noida by Sweety — a designer whose obsession with raw lines, sculptural silhouettes, and structural geometry had no outlet in the mainstream Indian fashion industry.
+                Elyara was founded in Noida by Sweety Chauhan — a designer whose obsession with raw lines, sculptural silhouettes, and structural geometry had no outlet in the mainstream Indian fashion industry.
               </p>
               <p>
                 After years of studying craft traditions and international avant-garde movements, Sweety established the Elyara atelier as a space where Indian textile heritage meets modern architectural thinking.
