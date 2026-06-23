@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Custom breakpoint: xs = 375px (small phones) */
+@custom-variant xs (@media (width >= 375px));
+
 @layer base {
   :root {
     --color-navy: #1a2744;

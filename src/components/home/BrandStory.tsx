@@ -19,7 +19,7 @@ export default function BrandStory() {
           <div className="relative w-full h-full overflow-hidden">
             <Image
               src="/assets/hero_files/elyara.jpg"
-              alt="Sweety — Designer and Founder of Elyara"
+              alt="Sweety Chauhan — Designer and Founder of ELYARA"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 90vw, 45vw"
