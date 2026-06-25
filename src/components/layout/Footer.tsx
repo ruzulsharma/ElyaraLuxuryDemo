@@ -98,10 +98,10 @@ export default function Footer() {
             <p>DLF Mall of India, Sector 18<br />Noida, Uttar Pradesh</p>
             <p>Mon – Sat: 11:00 – 20:00 IST</p>
             <p>
-              <a href="mailto:elyarabysweety@gmail.com" className="hover:text-white transition-colors">hello@elyara.in</a>
+              <a href="mailto:elyarabysweety@gmail.com" className="hover:text-white transition-colors">elyarabysweety@gmail.com</a>
             </p>
             <p>
-              <a href="tel:+8796134073" className="hover:text-white transition-colors">+91 99999 99999</a>
+              <a href="tel:+8796134073" className="hover:text-white transition-colors">+91 8796134073 </a>
             </p>
           </address>
           <div className="mt-6">
