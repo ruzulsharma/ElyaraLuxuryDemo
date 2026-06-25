@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/context/CartContext";
 
 const NAV_LINKS = [
   { label: "Collections", href: "/collections" },
@@ -16,10 +17,11 @@ interface NavbarProps {
   cartCount?: number;
 }
 
-export default function Navbar({ cartCount = 0 }: NavbarProps) {
+export default function Navbar({ cartCount: _cartCountProp = 0 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [announcementVisible, setAnnouncementVisible] = useState(true);
+  const { totalItems, openCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -125,20 +127,20 @@ export default function Navbar({ cartCount = 0 }: NavbarProps) {
             </Link>
 
             {/* Cart */}
-            <Link
-              href="/cart"
-              aria-label={`Cart — ${cartCount} items`}
+            <button
+              onClick={openCart}
+              aria-label={`Cart — ${totalItems} items`}
               className="relative text-[#3a3a3a] hover:text-[#1a2744] transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#c9a96e] text-white text-[9px] flex items-center justify-center font-bold">
-                  {cartCount}
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold animate-pulse">
+                  {totalItems}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -197,20 +199,20 @@ export default function Navbar({ cartCount = 0 }: NavbarProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
               </svg>
             </Link>
-            <Link
-              href="/cart"
-              aria-label={`Cart — ${cartCount} items`}
+            <button
+              onClick={openCart}
+              aria-label={`Cart — ${totalItems} items`}
               className="relative text-[#3a3a3a] hover:text-[#1a2744] transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#c9a96e] text-white text-[9px] flex items-center justify-center font-bold">
-                  {cartCount}
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold">
+                  {totalItems}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </nav>
 

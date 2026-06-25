@@ -1,94 +1,108 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
-const HERO_SLIDES = [
+const HERO_CONTENT = [
   {
-    image: "/assets/hero_files/main1.jpg",
     heading: "Wear What\nYou Imagine",
     subheading: "Bespoke Indian fashion, handcrafted for your form.",
-    cta: { label: "Explore Collections", href: "/collections" },
+    cta: { label: "Explore Collection", href: "/shop" },
   },
   {
-    image: "/assets/hero_files/Hero2.jpg",
     heading: "Sculpted\nWith Intention",
     subheading: "Avant-garde silhouettes born in our Noida atelier.",
     cta: { label: "Custom Order", href: "/custom-order" },
   },
   {
-    image: "/assets/hero_files/main2.jpg",
     heading: "Your Form,\nOur Art",
     subheading: "Every stitch is a conversation between craft and you.",
-    cta: { label: "Shop Now", href: "/shop" },
+    cta: { label: "View Lookbook", href: "/collections" },
   },
 ];
 
+// Rotate text overlay every 5s independently of the video loop
 export default function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [textIdx, setTextIdx] = useState(0);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
+  // Cycle text
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    const t = setInterval(() => {
+      setTextIdx((prev) => (prev + 1) % HERO_CONTENT.length);
     }, 5000);
-    return () => clearInterval(timer);
+    return () => clearInterval(t);
   }, []);
 
-  const slide = HERO_SLIDES[currentSlide];
+  // Try to play the video; handles autoplay policy gracefully
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.play().catch(() => {
+      // Autoplay blocked — video will show poster/static
+    });
+  }, []);
+
+  const content = HERO_CONTENT[textIdx];
 
   return (
-    <section className="relative h-[90vh] min-h-[600px] overflow-hidden bg-[#1a2744]" aria-label="Hero">
-      {/* Background Image */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="absolute inset-0"
-        >
-          <Image
-            src={slide.image}
-            alt={slide.heading}
-            fill
-            className="object-cover object-center"
-            priority={currentSlide === 0}
-            sizes="100vw"
-          />
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1a2744]/80 via-[#1a2744]/40 to-transparent" />
-        </motion.div>
-      </AnimatePresence>
+    <section
+      className="relative h-[90vh] min-h-[600px] overflow-hidden bg-[#1a2744]"
+      aria-label="Hero"
+    >
+      {/* ── Video background ── */}
+      <video
+        ref={videoRef}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+          videoLoaded ? "opacity-100" : "opacity-0"
+        }`}
+        src="/assets/Vid/Vid1.MP4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster="/assets/hero_files/main1.jpg"
+        onCanPlay={() => setVideoLoaded(true)}
+        aria-hidden="true"
+      />
 
-      {/* Content */}
+      {/* Fallback gradient while video loads */}
+      {!videoLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2744] via-[#2d3f6b] to-[#1a2744]" />
+      )}
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#1a2744]/80 via-[#1a2744]/50 to-[#1a2744]/20" />
+
+      {/* ── Text content ── */}
       <div className="relative z-10 h-full flex items-center">
         <div className="max-w-7xl mx-auto px-6 sm:px-12 w-full">
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, y: 30 }}
+              key={textIdx}
+              initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-xl"
             >
               <p className="text-[#c9a96e] text-xs tracking-[0.4em] uppercase font-medium mb-4">
                 Elyara by Sweety
               </p>
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-light text-white leading-[1.1] whitespace-pre-line mb-6">
-                {slide.heading}
+                {content.heading}
               </h1>
               <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-10 max-w-sm">
-                {slide.subheading}
+                {content.subheading}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href={slide.cta.href}
+                  href={content.cta.href}
                   className="inline-block bg-[#c9a96e] text-[#1a2744] text-xs tracking-[0.25em] uppercase font-bold px-8 py-4 hover:bg-[#b8935a] transition-colors"
                 >
-                  {slide.cta.label}
+                  {content.cta.label}
                 </Link>
                 <Link
                   href="/custom-order"
@@ -102,21 +116,21 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Slide Dots */}
+      {/* ── Text dots ── */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3">
-        {HERO_SLIDES.map((_, i) => (
+        {HERO_CONTENT.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrentSlide(i)}
-            aria-label={`Go to slide ${i + 1}`}
+            onClick={() => setTextIdx(i)}
+            aria-label={`Show slide ${i + 1}`}
             className={`transition-all duration-300 rounded-full ${
-              i === currentSlide ? "w-8 h-2 bg-[#c9a96e]" : "w-2 h-2 bg-white/40"
+              i === textIdx ? "w-8 h-2 bg-[#c9a96e]" : "w-2 h-2 bg-white/40"
             }`}
           />
         ))}
       </div>
 
-      {/* Scroll Hint */}
+      {/* ── Scroll hint ── */}
       <motion.div
         animate={{ y: [0, 8, 0] }}
         transition={{ repeat: Infinity, duration: 1.8 }}

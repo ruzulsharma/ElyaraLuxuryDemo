@@ -134,13 +134,22 @@ export default function ProductGrid({ initialCategory = "all", initialFilter }: 
                     )}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <button
+                      type="button"
+                      onClick={() => window.location.href = `/shop/${product.id}`}
+                      className="block w-full bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-medium py-3 text-center hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
+                    >
+                      {product.isCustomizable ? "Customise & Buy" : "View Piece"}
+                    </button>
+                  </div>
+                  {/* <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                     <Link
                       href={`/shop/${product.id}`}
                       className="block w-full bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-medium py-3 text-center hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
                     >
                       {product.isCustomizable ? "Customise & Buy" : "View Piece"}
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="space-y-1">
                   <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a96e] font-medium">{product.collection}</p>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { PRODUCTS } from "@/lib/data";
+import { useCart } from "@/context/CartContext";
 
 const STATUS_LABELS: Record<string, string> = {
   available: "Available",
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function FeaturedProducts() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { addItem } = useCart();
   const featured = PRODUCTS.slice(0, 4);
 
   return (
@@ -92,10 +94,16 @@ export default function FeaturedProducts() {
                       className="w-full bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-medium py-3 hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
                       onClick={(e) => {
                         e.preventDefault();
-                        // Add to cart logic
+                        addItem({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image: product.images[0],
+                          styleNo: product.styleNo,
+                        });
                       }}
                     >
-                      {product.isCustomizable ? "Customise & Buy" : "Quick Add"}
+                      {product.isCustomizable ? "Customise & Add" : "Quick Add"}
                     </button>
                   </div>
                 </div>

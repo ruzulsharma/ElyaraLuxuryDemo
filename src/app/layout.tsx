@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import CartSidebar from "@/components/cart/CartSidebar";
+import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: {
@@ -51,7 +53,7 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   icons: {
-    icon: "assets/favicon.png",
+    icon: "/assets/favicon.png",
   },
 };
 
@@ -63,9 +65,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
-        <Navbar />
-        <main id="main-content">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <CartSidebar />
+          <main id="main-content">{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

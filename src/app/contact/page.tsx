@@ -52,8 +52,8 @@ export default function ContactPage() {
                     </svg>
                   ),
                   title: "Phone",
-                  content: "+91 99999 99999",
-                  href: "tel:+919999999999",
+                  content: "+91 8796134073",
+                  href: "tel:+8796134073",
                 },
                 {
                   icon: (
@@ -62,8 +62,8 @@ export default function ContactPage() {
                     </svg>
                   ),
                   title: "Email",
-                  content: "hello@elyara.in",
-                  href: "mailto:hello@elyara.in",
+                  content: "elyarabysweety@gmail.com",
+                  href: "mailto:elyarabysweety@gmail.com",
                 },
               ].map((item) => (
                 <div key={item.title} className="flex gap-4">

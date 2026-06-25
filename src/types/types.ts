@@ -13,6 +13,7 @@ export interface Product {
   sizes?: string[];
   colors?: string[];
   status: "available" | "made-to-order" | "sold-out" | "limited";
+  styleNo?: string;
 }
 
 export interface LookbookItem {
