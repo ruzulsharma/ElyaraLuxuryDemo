@@ -17,7 +17,8 @@ interface CartContextValue {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
+  // Rename addItem to addToCart here
+  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeItem: (id: string, size?: string) => void;
   updateQuantity: (id: string, size: string | undefined, delta: number) => void;
   clearCart: () => void;
@@ -34,21 +35,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
 
-  const addItem = useCallback((incoming: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+ const addToCart = useCallback((incoming: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     setItems((prev) => {
-      const key = `${incoming.id}__${incoming.size ?? ""}`;
-      const existing = prev.find((i) => `${i.id}__${i.size ?? ""}` === key);
-      if (existing) {
-        return prev.map((i) =>
-          `${i.id}__${i.size ?? ""}` === key
-            ? { ...i, quantity: i.quantity + (incoming.quantity ?? 1) }
-            : i
-        );
+      // Simplest possible check: Does an item with the same ID and size exist?
+      const existingIndex = prev.findIndex(
+        (i) => i.id === incoming.id && i.size === incoming.size
+      );
+
+      if (existingIndex > -1) {
+        const newItems = [...prev];
+        newItems[existingIndex].quantity += (incoming.quantity ?? 1);
+        return newItems;
       }
       return [...prev, { ...incoming, quantity: incoming.quantity ?? 1 }];
     });
     setIsOpen(true);
   }, []);
+
+ // const addToCart = addItem;
 
   const removeItem = useCallback((id: string, size?: string) => {
     setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size)));
@@ -59,10 +63,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       prev
         .map((i) =>
           i.id === id && i.size === size
-            ? { ...i, quantity: Math.max(0, i.quantity + delta) }
+            ? { ...i, quantity: Math.max(1, i.quantity + delta) }
             : i
         )
-        .filter((i) => i.quantity > 0)
     );
   }, []);
 
@@ -73,7 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, isOpen, openCart, closeCart, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal }}
+      value={{ items, isOpen, openCart, closeCart, addToCart, removeItem, updateQuantity, clearCart, totalItems, subtotal }}
     >
       {children}
     </CartContext.Provider>

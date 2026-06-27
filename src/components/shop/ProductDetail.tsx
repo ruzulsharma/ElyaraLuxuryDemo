@@ -4,19 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Product } from "@/types/types";
+import { useCart } from "@/context/CartContext";
 
 interface ProductDetailProps {
   product: Product;
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const handleAddToCart = () => {
+    const handleAddToCart = () => {
+    //  alert("Button clicked!");
     if (!selectedSize) return;
+    addToCart({ 
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      size: selectedSize,
+      color: selectedColor || (product.colors && product.colors[0]) || "Default",
+    });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 3000);
   };
@@ -91,7 +102,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <p className="text-xs text-[#1a2744]/50 mt-1">Taxes Included · Shipping at checkout</p>
           </div>
 
-          {/* Description */}
           <p className="text-sm text-[#3a3a3a] leading-relaxed border-t border-[#e8e0d0] pt-4">
             {product.description}
           </p>
