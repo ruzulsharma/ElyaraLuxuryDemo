@@ -22,7 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function FeaturedProducts() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const featured = PRODUCTS.slice(0, 4);
 
   return (
@@ -94,7 +94,7 @@ export default function FeaturedProducts() {
                       className="w-full bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-medium py-3 hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
                       onClick={(e) => {
                         e.preventDefault();
-                        addItem({
+                        addToCart({
                           id: product.id,
                           name: product.name,
                           price: product.price,
