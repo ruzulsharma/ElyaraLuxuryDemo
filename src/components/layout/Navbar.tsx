@@ -1,364 +1,6 @@
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { useCart } from "@/context/CartContext";
-
-// const NAV_LINKS = [
-//   { label: "Collections", href: "/collections" },
-//   { label: "Shop", href: "/shop" },
-//   { label: "Custom Order", href: "/custom-order" },
-//   { label: "About", href: "/about" },
-//   { label: "Contact", href: "/contact" },
-// ];
-
-// interface NavbarProps {
-//   cartCount?: number;
-// }
-
-// export default function Navbar({ cartCount: _cartCountProp = 0 }: NavbarProps) {
-//   const [isScrolled, setIsScrolled] = useState(false);
-//   const [isMobileOpen, setIsMobileOpen] = useState(false);
-//   const [announcementVisible, setAnnouncementVisible] = useState(true);
-//   const { totalItems, openCart } = useCart();
-
-//   useEffect(() => {
-//     const handleScroll = () => setIsScrolled(window.scrollY > 40);
-//     window.addEventListener("scroll", handleScroll);
-//     return () => window.removeEventListener("scroll", handleScroll);
-//   }, []);
-
-//   // Close drawer when resizing to desktop
-//   useEffect(() => {
-//     const handleResize = () => {
-//       if (window.innerWidth >= 768) setIsMobileOpen(false);
-//     };
-//     window.addEventListener("resize", handleResize);
-//     return () => window.removeEventListener("resize", handleResize);
-//   }, []);
-
-//   return (
-//     <>
-//       {/* ── Announcement Bar ── */}
-//       <AnimatePresence>
-//         {announcementVisible && (
-//           <motion.div
-//             initial={{ height: "auto", opacity: 1 }}
-//             exit={{ height: 0, opacity: 0 }}
-//             transition={{ duration: 0.25 }}
-//             className="bg-[#1a2744] text-[#c9a96e] text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] uppercase font-medium text-center py-2.5 px-4 flex items-center justify-center gap-3 overflow-hidden"
-//           >
-//             <span className="leading-snug">
-//               Free shipping on orders above ₹5,000 · All pieces are made-to-order with love
-//             </span>
-//             <button
-//               onClick={() => setAnnouncementVisible(false)}
-//               className="flex-shrink-0 text-[#c9a96e]/60 hover:text-[#c9a96e] transition-colors text-lg leading-none"
-//               aria-label="Close announcement"
-//             >
-//               ×
-//             </button>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-
-//       {/* ── Main Header ── */}
-//       <header
-//         className={`sticky top-0 z-50 transition-all duration-500 ${
-//           isScrolled
-//             ? "bg-[#faf8f4]/95 backdrop-blur-sm shadow-sm border-b border-[#e8e0d0]"
-//             : "bg-[#faf8f4] border-b border-[#e8e0d0]"
-//         }`}
-//       >
-//         {/* ─────────────────────────────────────────────────────────────────
-//             MOBILE NAV  (< md)
-//             Layout: [hamburger] [centered logo] [search + cart]
-//             Three equal columns via grid so the wordmark is truly centred.
-//         ───────────────────────────────────────────────────────────────── */}
-//         <div className="md:hidden grid grid-cols-3 items-center h-16 px-4">
-
-//           {/* Left — hamburger */}
-//           <div className="flex items-center justify-start">
-//             <button
-//               onClick={() => setIsMobileOpen(!isMobileOpen)}
-//               aria-label="Toggle menu"
-//               aria-expanded={isMobileOpen}
-//               className="p-1 text-[#1a2744]"
-//             >
-//               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 {isMobileOpen ? (
-//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-//                 ) : (
-//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-//                 )}
-//               </svg>
-//             </button>
-//           </div>
-
-//           {/* Centre — wordmark (logo image hidden on mobile; text is the brand) */}
-//           <Link
-//             href="/"
-//             className="flex flex-col items-center justify-center leading-none"
-//             aria-label="Elyara — home"
-//           >
-//             <span
-//               className="font-serif text-[1.35rem] font-bold tracking-[0.2em] text-[#1a2744] uppercase"
-//               style={{ letterSpacing: "0.22em" }}
-//             >
-//               ELYARA
-//             </span>
-//             <span className="text-[9px] tracking-[0.25em] text-[#c9a96e] uppercase font-medium mt-0.5">
-//               By Sweety
-//             </span>
-//           </Link>
-
-//           {/* Right — cart (+ search on slightly wider phones) */}
-//           <div className="flex items-center justify-end gap-3">
-//             {/* Search — visible from ~375 px upward */}
-//             <Link
-//               href="/shop"
-//               aria-label="Search"
-//               className="text-[#3a3a3a] hover:text-[#1a2744] transition-colors hidden xs:block"
-//             >
-//               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
-//               </svg>
-//             </Link>
-
-//             {/* Cart */}
-//             <button
-//               onClick={openCart}
-//               aria-label={`Cart — ${totalItems} items`}
-//               className="relative text-[#3a3a3a] hover:text-[#1a2744] transition-colors"
-//             >
-//               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-//               </svg>
-//               {totalItems > 0 && (
-//                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold animate-pulse">
-//                   {totalItems}
-//                 </span>
-//               )}
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* ─────────────────────────────────────────────────────────────────
-//             DESKTOP NAV  (≥ md)
-//             Layout: [logo + wordmark] [nav links] [search + cart]
-//         ───────────────────────────────────────────────────────────────── */}
-//         <nav
-//           className="hidden md:flex max-w-7xl mx-auto px-6 lg:px-8 h-16 items-center justify-between gap-4"
-//           aria-label="Main navigation"
-//         >
-//           {/* Logo + Wordmark */}
-//           <Link href="/" className="flex-shrink-0 flex items-center gap-3">
-//             <div className="relative w-10 h-10">
-//               <Image
-//                 src="/assets/Logo.jpg"
-//                 alt="Elyara by Sweety"
-//                 fill
-//                 className="object-contain rounded-full"
-//                 priority
-//               />
-//             </div>
-//             <div className="flex flex-col leading-none">
-//               <span className="font-serif text-lg font-bold tracking-[0.18em] text-[#1a2744] uppercase">
-//                 Elyara
-//               </span>
-//               <span className="text-[10px] tracking-[0.22em] text-[#c9a96e] uppercase font-medium">
-//                 By Sweety
-//               </span>
-//             </div>
-//           </Link>
-
-//           {/* Nav Links */}
-//           <ul className="flex items-center gap-7 lg:gap-9">
-//             {NAV_LINKS.map((link) => (
-//               <li key={link.href}>
-//                 <Link
-//                   href={link.href}
-//                   className="text-xs tracking-[0.18em] uppercase font-medium text-[#3a3a3a] hover:text-[#1a2744] transition-colors relative group"
-//                 >
-//                   {link.label}
-//                   <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-[#c9a96e] group-hover:w-full transition-all duration-300" />
-//                 </Link>
-//               </li>
-//             ))}
-//           </ul>
-
-//           {/* Right Icons */}
-//           <div className="flex items-center gap-4">
-//             <Link
-//               href="/shop"
-//               aria-label="Search"
-//               className="text-[#3a3a3a] hover:text-[#1a2744] transition-colors"
-//             >
-//               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
-//               </svg>
-//             </Link>
-//             <button
-//               onClick={openCart}
-//               aria-label={`Cart — ${totalItems} items`}
-//               className="relative text-[#3a3a3a] hover:text-[#1a2744] transition-colors"
-//             >
-//               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-//               </svg>
-//               {totalItems > 0 && (
-//                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold">
-//                   {totalItems}
-//                 </span>
-//               )}
-//             </button>
-//           </div>
-//         </nav>
-
-//         {/* ── Mobile Drawer ── */}
-//         <AnimatePresence>
-//           {isMobileOpen && (
-//             <motion.div
-//               initial={{ height: 0, opacity: 0 }}
-//               animate={{ height: "auto", opacity: 1 }}
-//               exit={{ height: 0, opacity: 0 }}
-//               transition={{ duration: 0.28, ease: "easeInOut" }}
-//               className="md:hidden overflow-hidden bg-[#faf8f4] border-t border-[#e8e0d0]"
-//             >
-//               <ul className="px-6 py-6 space-y-5">
-//                 {NAV_LINKS.map((link) => (
-//                   <li key={link.href}>
-//                     <Link
-//                       href={link.href}
-//                       onClick={() => setIsMobileOpen(false)}
-//                       className="flex items-center gap-3 text-sm tracking-[0.2em] uppercase font-medium text-[#1a2744] group"
-//                     >
-//                       <span className="w-4 h-px bg-[#c9a96e] group-hover:w-6 transition-all duration-300" />
-//                       {link.label}
-//                     </Link>
-//                   </li>
-//                 ))}
-//               </ul>
-
-//               {/* Drawer Footer */}
-//               <div className="px-6 pb-6 border-t border-[#e8e0d0] pt-5 flex gap-6 text-xs text-[#1a2744]/50 tracking-wide">
-//                 <a href="tel:+919999999999" className="hover:text-[#c9a96e] transition-colors">
-//                   +91 99999 99999
-//                 </a>
-//                 <a href="mailto:hello@elyara.in" className="hover:text-[#c9a96e] transition-colors">
-                  
-//                 </a>
-//               </div>
-//             </motion.div>
-//           )}
-//         </AnimatePresence>
-//       </header>
-//     </>
-//   );
-// }
-
-
-
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { useCart } from "@/context/CartContext";
-// import SearchModal from "@/components/layout/SearchModal";
-
-// const NAV_LINKS = [
-//   { label: "Collections", href: "/collections" },
-//   { label: "Shop", href: "/shop" },
-//   { label: "Custom Order", href: "/custom-order" },
-//   { label: "About", href: "/about" },
-//   { label: "Contact", href: "/contact" },
-// ];
-
-// export default function Navbar() {
-//   const [isScrolled, setIsScrolled] = useState(false);
-//   const [isMobileOpen, setIsMobileOpen] = useState(false);
-//   const [announcementVisible, setAnnouncementVisible] = useState(true);
-//   const [isSearchOpen, setIsSearchOpen] = useState(false);
-//   const { totalItems, openCart } = useCart();
-
-//   useEffect(() => {
-//     const handleScroll = () => setIsScrolled(window.scrollY > 40);
-//     window.addEventListener("scroll", handleScroll);
-//     return () => window.removeEventListener("scroll", handleScroll);
-//   }, []);
-
-//   return (
-//     <>
-//       <AnimatePresence>
-//         {announcementVisible && (
-//           <motion.div
-//             initial={{ height: "auto", opacity: 1 }}
-//             exit={{ height: 0, opacity: 0 }}
-//             transition={{ duration: 0.25 }}
-//             className="bg-[#1a2744] text-[#c9a96e] text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] uppercase font-medium text-center py-2.5 px-4 flex items-center justify-center gap-3 overflow-hidden"
-//           >
-//             <span className="leading-snug">
-//               Free shipping on orders above ₹5,000 · All pieces are made-to-order with love
-//             </span>
-//             <button
-//               onClick={() => setAnnouncementVisible(false)}
-//               className="flex-shrink-0 text-[#c9a96e]/60 hover:text-[#c9a96e] transition-colors text-lg leading-none"
-//               aria-label="Close announcement"
-//             >
-//               ×
-//             </button>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-
-//       <header
-//         className={`sticky top-0 z-50 transition-all duration-500 ${
-//           isScrolled
-//             ? "bg-[#faf8f4]/95 backdrop-blur-sm shadow-sm border-b border-[#e8e0d0]"
-//             : "bg-[#faf8f4] border-b border-[#e8e0d0]"
-//         }`}
-//       >
-        
-//         {/* Mobile Nav */}
-//         <div className="md:hidden grid grid-cols-3 items-center h-16 px-4">
-//           <button onClick={() => setIsMobileOpen(!isMobileOpen)} aria-label="Toggle menu">
-//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={isMobileOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} /></svg>
-//           </button>
-//           <Link href="/" className="flex flex-col items-center">
-//             <span className="font-serif text-lg font-bold tracking-[0.2em] text-[#1a2744]">ELYARA</span>
-//           </Link>
-//           <div className="flex items-center justify-end gap-3">
-//             <button onClick={() => setIsSearchOpen(true)} className="text-[#3a3a3a]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" /></svg></button>
-//             <button onClick={openCart} className="relative"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>{totalItems > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{totalItems}</span>}</button>
-//           </div>
-//         </div>
-
-//         {/* Desktop Nav */}
-//         <nav className="hidden md:flex max-w-7xl mx-auto px-6 h-16 items-center justify-between">
-//           <Link href="/" className="flex items-center gap-3">
-//             <div className="relative w-10 h-10"><Image src="/assets/Logo.jpg" alt="Logo" fill className="rounded-full" /></div>
-//             <div className="flex flex-col"><span className="font-serif text-lg font-bold text-[#1a2744]">Elyara</span><span className="text-[10px] text-[#c9a96e]">By Sweety</span></div>
-//           </Link>
-//           <ul className="flex items-center gap-9">
-//             {NAV_LINKS.map((link) => <li key={link.href}><Link href={link.href} className="text-xs uppercase font-medium">{link.label}</Link></li>)}
-//           </ul>
-//           <div className="flex items-center gap-4">
-//             <button onClick={() => setIsSearchOpen(true)}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" /></svg></button>
-//             <button onClick={openCart} className="relative"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>{totalItems > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{totalItems}</span>}</button>
-//           </div>
-//         </nav>
-//       </header>
-
-//       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-//     </>
-//   );
-// }
-
-
 "use client";
-import React, { useState, useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -372,6 +14,13 @@ const NAV_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
+const CATEGORY_TAGS = [
+  { label: "Coord Sets", href: "/shop?category=coord-sets" },
+  { label: "Dresses", href: "/shop?category=dresses" },
+  { label: "Tops", href: "/shop?category=tops" },
+  { label: "Custom", href: "/custom-order" },
+];
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -379,79 +28,255 @@ export default function Navbar() {
   const { totalItems, openCart } = useCart();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobileOpen]);
+
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "bg-[#faf8f4]/90 backdrop-blur-md shadow-sm border-b border-[#e8e0d0]" : "bg-[#faf8f4] border-b border-[#e8e0d0]"}`}>
-      
-      {/* MOBILE NAV */}
-      <div className="md:hidden grid grid-cols-3 items-center h-16 px-4">
-        <button onClick={() => setIsMobileOpen(true)} className="text-[#1a2744]">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
-        </button>
+    <>
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? "bg-[#faf8f4]/95 backdrop-blur-md shadow-sm border-b border-[#e8e0d0]"
+            : "bg-[#faf8f4] border-b border-[#e8e0d0]"
+        }`}
+      >
+        {/* ── MOBILE NAV ─────────────────────────────────────────────────── */}
+        <div className="md:hidden grid grid-cols-3 items-center h-16 px-4">
+          {/* Left — hamburger */}
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={isMobileOpen}
+            className="text-[#1a2744] p-1 -ml-1"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        <Link href="/" className="flex flex-col items-center justify-center leading-none">
-          <span className="font-serif text-[1.35rem] font-bold tracking-[0.22em] text-[#1a2744] uppercase">ELYARA</span>
-          <span className="text-[9px] tracking-[0.25em] text-[#c9a96e] uppercase font-medium mt-0.5">By Sweety</span>
-        </Link>
+          {/* Centre — wordmark */}
+          <Link href="/" className="flex flex-col items-center justify-center leading-none" aria-label="Elyara home">
+            <span className="font-serif text-[1.3rem] font-bold tracking-[0.22em] text-[#1a2744] uppercase">
+              ELYARA
+            </span>
+            <span className="text-[9px] tracking-[0.25em] text-[#c9a96e] uppercase font-medium mt-0.5">
+              By Sweety
+            </span>
+          </Link>
 
-        <div className="flex items-center justify-end gap-3 text-[#1a2744]">
-          <button onClick={() => setIsSearchOpen(true)}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" /></svg></button>
-          <button onClick={openCart} className="relative"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>{totalItems > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{totalItems}</span>}</button>
+          {/* Right — search + cart */}
+          <div className="flex items-center justify-end gap-3 text-[#1a2744]">
+            <button onClick={() => setIsSearchOpen(true)} aria-label="Search">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
+              </svg>
+            </button>
+            <button onClick={openCart} className="relative" aria-label={`Cart — ${totalItems} items`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* DRAWER OVERLAY & PANEL */}
+        {/* ── DESKTOP NAV ────────────────────────────────────────────────── */}
+        <nav
+          className="hidden md:flex max-w-7xl mx-auto px-8 h-16 items-center justify-between"
+          aria-label="Main navigation"
+        >
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 flex-shrink-0">
+            <div className="relative w-10 h-10">
+              <Image src="/assets/Logo.jpg" alt="Elyara by Sweety" fill className="object-contain rounded-full" priority />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-serif text-lg font-bold tracking-[0.18em] text-[#1a2744] uppercase">Elyara</span>
+              <span className="text-[10px] tracking-[0.22em] text-[#c9a96e] uppercase font-medium">By Sweety</span>
+            </div>
+          </Link>
+
+          {/* Nav links */}
+          <ul className="flex items-center gap-9">
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-xs tracking-[0.18em] uppercase font-medium text-[#3a3a3a] hover:text-[#1a2744] transition-colors relative group"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-[#c9a96e] group-hover:w-full transition-all duration-300" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* Right icons — search, profile, cart */}
+          <div className="flex items-center gap-4 text-[#1a2744]">
+            <button onClick={() => setIsSearchOpen(true)} aria-label="Search">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
+              </svg>
+            </button>
+
+            {/* Profile icon → /login */}
+            <Link href="/login" aria-label="Account / Sign in" className="hover:text-[#c9a96e] transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </Link>
+
+            <button onClick={openCart} className="relative" aria-label={`Cart — ${totalItems} items`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* ── MOBILE DRAWER ────────────────────────────────────────────────── */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
             {/* Backdrop */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black z-50" />
-            {/* Drawer Panel */}
-            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }} className="fixed top-0 left-0 h-full w-[85%] max-w-sm bg-[#faf8f4] z-50 p-8 shadow-2xl">
-              <button onClick={() => setIsMobileOpen(false)} className="mb-8 text-[#1a2744]">✕</button>
-              
-              <div className="flex flex-wrap gap-3 mb-10">
-                {["COORD SETS", "DRESSES", "TOPS", "OUTWEARS"].map((cat) => (
-                  <Link key={cat} href={`/shop?category=${cat.toLowerCase().replace(' ', '-')}`} onClick={() => setIsMobileOpen(false)} className="px-4 py-2 border border-[#1a2744] text-[10px] tracking-[0.2em] uppercase font-medium text-[#1a2744] hover:bg-[#1a2744] hover:text-white">
-                    {cat}
-                  </Link>
-                ))}
+            <motion.div
+              key="drawer-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.55 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setIsMobileOpen(false)}
+              className="fixed inset-0 bg-black z-[60]"
+              aria-hidden="true"
+            />
+
+            {/* Panel */}
+            <motion.div
+              key="drawer-panel"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.32 }}
+              className="fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-[#faf8f4] z-[70] flex flex-col shadow-2xl"
+              role="dialog"
+              aria-label="Navigation menu"
+              aria-modal="true"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-[#e8e0d0]">
+                <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex flex-col leading-none">
+                  <span className="font-serif text-base font-bold tracking-[0.2em] text-[#1a2744] uppercase">ELYARA</span>
+                  <span className="text-[9px] tracking-[0.2em] text-[#c9a96e] uppercase font-medium">By Sweety</span>
+                </Link>
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  aria-label="Close menu"
+                  className="w-8 h-8 flex items-center justify-center text-[#1a2744]/50 hover:text-[#1a2744]"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
 
-              <ul className="space-y-6 mb-10">
-                {NAV_LINKS.map((link) => (
-                  <li key={link.href}><Link href={link.href} onClick={() => setIsMobileOpen(false)} className="text-sm tracking-[0.2em] uppercase font-medium text-[#1a2744]">{link.label}</Link></li>
-                ))}
-              </ul>
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+                {/* Category quick-links */}
+                <div>
+                  <p className="text-[9px] tracking-[0.3em] uppercase text-[#1a2744]/40 font-medium mb-3">Shop by Category</p>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_TAGS.map((tag) => (
+                      <Link
+                        key={tag.href}
+                        href={tag.href}
+                        onClick={() => setIsMobileOpen(false)}
+                        className="px-3 py-1.5 border border-[#e8e0d0] text-[10px] tracking-[0.15em] uppercase font-medium text-[#1a2744] hover:bg-[#1a2744] hover:text-white transition-colors"
+                      >
+                        {tag.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
 
-              <Link href="/custom-order" onClick={() => setIsMobileOpen(false)} className="block w-full text-center py-4 bg-[#1a2744] text-[#c9a96e] text-sm tracking-[0.2em] uppercase font-bold">
-                Custom Order
-              </Link>
+                {/* Main nav links */}
+                <nav aria-label="Mobile navigation">
+                  <ul className="space-y-1">
+                    {NAV_LINKS.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          onClick={() => setIsMobileOpen(false)}
+                          className="flex items-center gap-3 py-3 text-sm tracking-[0.15em] uppercase font-medium text-[#1a2744] hover:text-[#c9a96e] transition-colors group"
+                        >
+                          <span className="w-4 h-px bg-[#c9a96e]/40 group-hover:w-6 group-hover:bg-[#c9a96e] transition-all duration-300" />
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                    <li>
+                      <Link
+                        href="/custom-order"
+                        onClick={() => setIsMobileOpen(false)}
+                        className="flex items-center gap-3 py-3 text-sm tracking-[0.15em] uppercase font-medium text-[#c9a96e] hover:text-[#1a2744] transition-colors group"
+                      >
+                        <span className="w-4 h-px bg-[#c9a96e] group-hover:w-6 transition-all duration-300" />
+                        Custom Order
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+
+              {/* Footer — auth actions */}
+              <div className="px-6 py-5 border-t border-[#e8e0d0] space-y-3">
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center justify-center w-full py-3 border-2 border-[#1a2744] text-[#1a2744] text-xs tracking-[0.2em] uppercase font-bold hover:border-[#c9a96e] hover:text-[#c9a96e] transition-colors"
+                >
+                  Create Account
+                </Link>
+
+                {/* Contact */}
+                <div className="pt-2 flex gap-5 text-xs text-[#1a2744]/40">
+                  <a href="tel:+918796134073" className="hover:text-[#c9a96e] transition-colors">+91 87961 34073</a>
+                  <a href="mailto:elyarabysweety@gmail.com" className="hover:text-[#c9a96e] transition-colors">Email Us</a>
+                </div>
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* DESKTOP NAV */}
-      <nav className="hidden md:flex max-w-7xl mx-auto px-8 h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="relative w-10 h-10"><Image src="/assets/Logo.jpg" alt="Logo" fill className="object-contain rounded-full" /></div>
-          <div className="flex flex-col leading-none"><span className="font-serif text-lg font-bold tracking-[0.18em] text-[#1a2744] uppercase">Elyara</span><span className="text-[10px] tracking-[0.22em] text-[#c9a96e] uppercase font-medium">By Sweety</span></div>
-        </Link>
-        <ul className="flex items-center gap-9">
-          {NAV_LINKS.map((link) => <li key={link.href}><Link href={link.href} className="text-xs tracking-[0.18em] uppercase font-medium text-[#3a3a3a] hover:text-[#1a2744]">{link.label}</Link></li>)}
-        </ul>
-        <div className="flex items-center gap-4 text-[#1a2744]">
-          <button onClick={() => setIsSearchOpen(true)}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" /></svg></button>
-          <button onClick={openCart} className="relative"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>{totalItems > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{totalItems}</span>}</button>
-        </div>
-      </nav>
-      
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-    </header>
+    </>
   );
 }

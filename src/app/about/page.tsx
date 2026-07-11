@@ -68,7 +68,7 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="bg-[#1a2744] py-24 px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <Image src="/assets/hero_files/elyara.jpg" alt="" fill className="object-cover" />
+          <Image src="/assets/hero_files/founder.jpeg" alt="" fill className="object-cover" />
         </div>
         <div className="relative z-10">
           <p className="text-[#c9a96e] text-xs tracking-[0.4em] uppercase font-medium mb-3">Our Story</p>
@@ -87,7 +87,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="relative aspect-square max-w-lg">
             <Image
-              src="/assets/hero_files/elyara.jpg"
+              src="/assets/hero_files/founder.jpeg"
               alt="Sweety — Founder of Elyara"
               fill
               className="object-cover"

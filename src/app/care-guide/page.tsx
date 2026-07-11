@@ -40,9 +40,7 @@ const CARE_SECTIONS = [
     icon: "✂️",
     title: "Repairs",
     content: [
-      "Minor repairs (loose threads, hooks) can be handled at home with basic sewing kits.",
-      "For structural repairs or alterations, contact us at elyarabysweety@gmail.com.",
-      "All Elyara pieces carry a 3-month craftsmanship warranty on seam integrity.",
+      "Minor repairs (loose threads, hooks) can be handled at home with basic sewing kits."
     ],
   },
 ];

@@ -51,7 +51,7 @@ export const PRODUCTS: Product[] = [
     styleNo: "003",
   },
   {
-    id: "ELY-004",
+    id: "ELY-004", 
     name: "Alaya",
     price: 4999,
     category: "dresses",
@@ -190,7 +190,7 @@ export const COLLECTIONS = [
       "Our flagship collection — 11 named pieces spanning corsets, coord sets, and draped dresses. Every piece is rooted in Indian textile traditions (ajrakh, ikat, brocade) and reimagined through modern architectural tailoring.",
     image: "/assets/hero_files/main1.jpg",
     pieceCount: 11,
-    year: "2025",
+    year: "2026",
   },
   {
     id: "custom-order",

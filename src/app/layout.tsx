@@ -4,8 +4,10 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { CartProvider } from "@/context/CartContext";
+import PageIntro from "@/components/ui/PageIntro";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "Elyara by Sweety — Bespoke Indian Luxury Fashion",
     template: "%s | Elyara by Sweety",
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://elyara.in",
+    url: "https://elyarabysweety.com",
     siteName: "Elyara by Sweety",
     title: "Elyara by Sweety — Bespoke Indian Luxury Fashion",
     description:
@@ -65,6 +67,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
+        {/*
+          PageIntro fires once per session (sessionStorage guard).
+          It is a client component and renders above everything else,
+          so it blocks interaction during the ~2.5 s intro duration.
+        */}
+        <PageIntro />
+
         <CartProvider>
           <Navbar />
           <CartSidebar />

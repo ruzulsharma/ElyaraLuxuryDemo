@@ -1,132 +1,301 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useTransition } from "react";
 import Script from "next/script";
 import { useCart } from "@/context/CartContext";
+import { createRazorpayOrderAction, verifyPaymentAction } from "@/lib/actions/order.actions";
+import { CheckoutFormSchema, type CheckoutFormValues } from "@/lib/validations";
+import { useRouter } from "next/navigation";
+
+type FormErrors = Partial<Record<keyof CheckoutFormValues, string>>;
 
 export default function CheckoutPage() {
-  const { items, subtotal } = useCart();
-  const [formData, setFormData] = useState({
+  const { items, subtotal, clearCart } = useCart();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [formData, setFormData] = useState<CheckoutFormValues>({
     name: "",
+    email: "",
     phone: "",
-    state: "",
     city: "",
+    state: "",
     pincode: "",
     addressLine1: "",
     addressLine2: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [serverError, setServerError] = useState("");
 
-  // Fetch location based on Pincode
-  const fetchLocationByPincode = async (pincode: string) => {
-    if (pincode.length === 6) {
-      try {
-        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-        const data = await response.json();
-        
-        if (data[0].Status === "Success") {
-          const { Circle, District } = data[0].PostOffice[0];
-          setFormData((prev) => ({ 
-            ...prev, 
-            state: Circle, 
-            city: District 
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching pincode:", error);
+  // ── Auto-fill city/state from pincode ──────────────────────────────────────
+  const handlePincodeBlur = async (pincode: string) => {
+    if (pincode.length !== 6) return;
+    try {
+      const res = await fetch(
+        `https://api.postalpincode.in/pincode/${pincode}`
+      );
+      const data = await res.json();
+      if (data[0]?.Status === "Success") {
+        const { Circle, District } = data[0].PostOffice[0];
+        setFormData((prev) => ({ ...prev, state: Circle, city: District }));
       }
+    } catch {
+      // Silently fail — user can type manually
     }
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 10) value = value.slice(0, 10);
-    setFormData({ ...formData, phone: value });
+  const updateField = (field: keyof CheckoutFormValues, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    setServerError("");
   };
 
-  const handlePayment = async () => {
-    if (formData.phone.length !== 10) {
-      alert("Please enter a valid 10-digit phone number.");
+  // ── Client-side validation before hitting the server ───────────────────────
+  const validate = (): boolean => {
+    const parsed = CheckoutFormSchema.safeParse(formData);
+    if (parsed.success) {
+      setFieldErrors({});
+      return true;
+    }
+    const errs: FormErrors = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof CheckoutFormValues;
+      errs[key] = issue.message;
+    }
+    setFieldErrors(errs);
+    return false;
+  };
+
+  const handlePayment = () => {
+    if (!validate()) return;
+    if (items.length === 0) {
+      setServerError("Your cart is empty.");
       return;
     }
-    
-    if (!formData.name || !formData.addressLine1 || !formData.pincode) {
-      alert("Please fill in all required fields.");
-      return;
-    }
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: subtotal * 100,
-      currency: "INR",
-      name: "Elyara by Sweety",
-      description: "Bespoke Luxury Fashion",
-      handler: (response: any) => {
-        alert("Payment Successful! Ref: " + response.razorpay_payment_id);
-      },
-      prefill: {
-        name: formData.name,
-        contact: "+91" + formData.phone,
-      },
-    };
+    startTransition(async () => {
+      // 1. Create order via Server Action
+      const result = await createRazorpayOrderAction({
+        formData,
+        items: items.map((i) => ({
+          productId: i.id,
+          productName: i.name,
+          styleNo: i.styleNo,
+          pricePaise: i.price * 100,
+          quantity: i.quantity,
+          size: i.size,
+          color: i.color,
+        })),
+      });
 
-    const rzp = new (window as any).Razorpay(options);
-    rzp.open();
+      if (!result.success || !result.razorpayOrderId) {
+        setServerError(result.error ?? "Payment setup failed. Please try again.");
+        return;
+      }
+
+      // 2. Open Razorpay checkout
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: result.amount,
+        currency: result.currency,
+        name: "Elyara by Sweety",
+        description: "Bespoke Luxury Fashion",
+        order_id: result.razorpayOrderId,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: `+91${formData.phone}`,
+        },
+        theme: { color: "#1a2744" },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          // 3. Verify signature via Server Action
+          const verification = await verifyPaymentAction({
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+
+          if (verification.success) {
+            clearCart();
+            router.push(
+              `/order-confirmed?ref=${result.dbOrderId}`
+            );
+          } else {
+            setServerError(
+              "Payment received but verification failed. Please contact us at elyarabysweety@gmail.com with your payment ID."
+            );
+          }
+        },
+      };
+
+      const rzp = new (window as unknown as { Razorpay: new (o: unknown) => { open: () => void } }).Razorpay(options);
+      rzp.open();
+    });
   };
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center text-center px-6">
+        <div className="space-y-4">
+          <p className="font-serif text-xl text-[#1a2744]">Your bag is empty</p>
+          <a href="/shop" className="inline-block text-[#c9a96e] text-sm underline">
+            Browse the collection →
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-6 grid md:grid-cols-2 gap-12">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-      
-      {/* LEFT: FORM */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-serif text-[#1a2744] uppercase tracking-widest border-b pb-4">Shipping Details</h2>
-        
-        <input type="text" placeholder="Full Name" className="w-full p-4 border border-[#e8e0d0]" 
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })} value={formData.name} />
-        
-        <div className="flex border border-[#e8e0d0]">
-          <span className="p-4 bg-[#e8e0d0]/30 text-[#1a2744]/60">+91</span>
-          <input type="tel" placeholder="Phone Number" value={formData.phone} className="w-full p-4 focus:outline-none"
-            onChange={handlePhoneChange} />
-        </div>
+    <div className="bg-[#faf8f4] min-h-screen">
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="beforeInteractive"
+      />
 
-        <input type="text" placeholder="Pincode" className="w-full p-4 border border-[#e8e0d0]" 
-            maxLength={6}
-            value={formData.pincode}
-            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} 
-            onBlur={(e) => fetchLocationByPincode(e.target.value)} 
-        />
+      <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 grid md:grid-cols-2 gap-12">
+        {/* ── LEFT: FORM ── */}
+        <div className="space-y-5">
+          <h2 className="text-xl font-serif font-light text-[#1a2744] uppercase tracking-widest border-b border-[#e8e0d0] pb-4">
+            Shipping Details
+          </h2>
 
-        <div className="grid grid-cols-2 gap-4">
-          <input type="text" placeholder="State" value={formData.state} className="p-4 border border-[#e8e0d0]" readOnly />
-          <input type="text" placeholder="City" value={formData.city} className="p-4 border border-[#e8e0d0]" readOnly />
-        </div>
-        
-        <input type="text" placeholder="Address Line 1" className="w-full p-4 border border-[#e8e0d0]" 
-          onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })} value={formData.addressLine1} />
-        
-        <input type="text" placeholder="Address Line 2 (Optional)" className="w-full p-4 border border-[#e8e0d0]" 
-          onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })} value={formData.addressLine2} />
-      </div>
-
-      {/* RIGHT: SUMMARY */}
-      <div className="bg-[#f5f0e8] p-8 h-fit">
-        <h2 className="text-xl font-serif text-[#1a2744] mb-6">Order Summary</h2>
-        <div className="space-y-4 mb-6">
-          {items.map((item) => (
-            <div key={`${item.id}-${item.size}`} className="flex justify-between text-sm">
-              <span>{item.name} x {item.quantity}</span>
-              <span>₹{(item.price * item.quantity).toLocaleString("en-IN")}</span>
+          {serverError && (
+            <div role="alert" className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
+              {serverError}
             </div>
-          ))}
+          )}
+
+          {/* Name */}
+          <Field label="Full Name *" error={fieldErrors.name}>
+            <input type="text" value={formData.name} onChange={(e) => updateField("name", e.target.value)} placeholder="Priya Sharma" className={inputCls(!!fieldErrors.name)} />
+          </Field>
+
+          {/* Email */}
+          <Field label="Email Address *" error={fieldErrors.email}>
+            <input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@email.com" className={inputCls(!!fieldErrors.email)} />
+          </Field>
+
+          {/* Phone */}
+          <Field label="Phone Number *" error={fieldErrors.phone}>
+            <div className={`flex border ${fieldErrors.phone ? "border-red-400" : "border-[#e8e0d0]"}`}>
+              <span className="px-4 py-3 bg-[#e8e0d0]/30 text-[#1a2744]/60 text-sm border-r border-[#e8e0d0] select-none">
+                +91
+              </span>
+              <input
+                type="tel"
+                value={formData.phone}
+                maxLength={10}
+                onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                placeholder="9876543210"
+                className="flex-1 p-3 bg-transparent text-sm text-[#1a2744] focus:outline-none"
+              />
+            </div>
+          </Field>
+
+          {/* Pincode */}
+          <Field label="Pincode *" error={fieldErrors.pincode}>
+            <input
+              type="text"
+              value={formData.pincode}
+              maxLength={6}
+              onChange={(e) => updateField("pincode", e.target.value.replace(/\D/g, ""))}
+              onBlur={(e) => handlePincodeBlur(e.target.value)}
+              placeholder="110001"
+              className={inputCls(!!fieldErrors.pincode)}
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="State" error={fieldErrors.state}>
+              <input type="text" value={formData.state} onChange={(e) => updateField("state", e.target.value)} placeholder="Delhi" className={inputCls(!!fieldErrors.state)} />
+            </Field>
+            <Field label="City" error={fieldErrors.city}>
+              <input type="text" value={formData.city} onChange={(e) => updateField("city", e.target.value)} placeholder="New Delhi" className={inputCls(!!fieldErrors.city)} />
+            </Field>
+          </div>
+
+          <Field label="Address Line 1 *" error={fieldErrors.addressLine1}>
+            <input type="text" value={formData.addressLine1} onChange={(e) => updateField("addressLine1", e.target.value)} placeholder="House / Flat / Block No." className={inputCls(!!fieldErrors.addressLine1)} />
+          </Field>
+
+          <Field label="Address Line 2">
+            <input type="text" value={formData.addressLine2 ?? ""} onChange={(e) => updateField("addressLine2", e.target.value)} placeholder="Street, Landmark (Optional)" className={inputCls(false)} />
+          </Field>
         </div>
-        <div className="border-t border-[#e8e0d0] pt-4 flex justify-between font-bold">
-          <span>Total</span>
-          <span>₹{subtotal.toLocaleString("en-IN")}</span>
+
+        {/* ── RIGHT: SUMMARY ── */}
+        <div className="bg-[#f5f0e8] p-8 h-fit space-y-6">
+          <h2 className="text-xl font-serif text-[#1a2744]">Order Summary</h2>
+
+          <div className="space-y-3">
+            {items.map((item) => (
+              <div key={`${item.id}-${item.size}`} className="flex justify-between text-sm">
+                <span className="text-[#1a2744]">
+                  {item.name}{item.size ? ` / ${item.size}` : ""}{" "}
+                  <span className="text-[#1a2744]/50">×{item.quantity}</span>
+                </span>
+                <span className="font-medium text-[#1a2744]">
+                  ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-[#e8e0d0] pt-4 flex justify-between font-bold text-[#1a2744]">
+            <span>Total</span>
+            <span>₹{subtotal.toLocaleString("en-IN")}</span>
+          </div>
+
+          <button
+            onClick={handlePayment}
+            disabled={isPending}
+            aria-busy={isPending}
+            className="w-full bg-[#1a2744] text-white py-4 uppercase tracking-widest font-bold text-sm hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isPending ? "Processing…" : `Pay ₹${subtotal.toLocaleString("en-IN")}`}
+          </button>
+
+          <p className="text-xs text-center text-[#1a2744]/40">
+            Secured by Razorpay · UPI, Cards, Net Banking
+          </p>
         </div>
-        <button onClick={handlePayment} className="w-full bg-[#1a2744] text-white py-4 mt-8 uppercase tracking-widest font-bold hover:bg-[#c9a96e]">
-          Pay ₹{subtotal.toLocaleString("en-IN")}
-        </button>
       </div>
+    </div>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function inputCls(hasError: boolean) {
+  return `w-full border bg-transparent px-4 py-3 text-sm text-[#1a2744] focus:outline-none focus:border-[#c9a96e] transition-colors ${
+    hasError ? "border-red-400" : "border-[#e8e0d0]"
+  }`;
+}
+
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-xs tracking-[0.15em] uppercase text-[#1a2744] font-medium mb-1.5">
+        {label}
+      </label>
+      {children}
+      {error && (
+        <p role="alert" className="text-red-500 text-xs mt-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

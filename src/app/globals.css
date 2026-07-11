@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
-/* Custom breakpoint: xs = 375px (small phones) */
+/* ── Custom breakpoints ──────────────────────────────────────────────────── */
 @custom-variant xs (@media (width >= 375px));
 
+/* ── Design tokens — inherited by all components via CSS variables ───────── */
 @layer base {
   :root {
-    --color-navy: #1a2744;
-    --color-gold: #c9a96e;
+    --color-navy:      #1a2744;
+    --color-gold:      #c9a96e;
     --color-gold-dark: #b8935a;
-    --color-cream: #faf8f4;
-    --color-warm: #f5f0e8;
-    --color-muted: #e8e0d0;
+    --color-cream:     #faf8f4;
+    --color-warm:      #f5f0e8;
+    --color-muted:     #e8e0d0;
+
+    /* Page-intro timing — adjustable without touching component code */
+    --intro-hold-ms:   1600;
+    --intro-exit-ms:   900;
   }
 
   html {
@@ -23,33 +28,49 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Focus visible styles for accessibility */
+  /* Accessible focus ring using brand gold */
   :focus-visible {
     outline: 2px solid #c9a96e;
     outline-offset: 2px;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #faf8f4;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #c9a96e;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #b8935a;
-  }
+  /* ── Custom scrollbar ──────────────────────────────────────────────────── */
+  ::-webkit-scrollbar        { width: 5px; }
+  ::-webkit-scrollbar-track  { background: #faf8f4; }
+  ::-webkit-scrollbar-thumb  { background: #c9a96e; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #b8935a; }
 }
 
+/* ── Utility classes ─────────────────────────────────────────────────────── */
 @layer utilities {
   .font-sans-clean {
     font-family: 'Helvetica Neue', Arial, sans-serif;
   }
+
+  /* Used by StatsSection gold rule animation */
+  .origin-center-h {
+    transform-origin: center;
+  }
+}
+
+/* ── Keyframe animations ─────────────────────────────────────────────────── */
+@keyframes intro-panel-exit {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0); }
+}
+
+@keyframes intro-text-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* spin is built-in to Tailwind, redeclared here for clarity */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Subtle pulse for loading ring */
+@keyframes ring-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
