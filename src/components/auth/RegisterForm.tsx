@@ -175,8 +175,7 @@ export default function RegisterForm() {
       )}
 
       {/* Hidden OTP field placeholder when not yet sent — ensures form submission doesn't fail */}
-      {!otpSent && <input type="hidden" name="otp" value="" />}
-
+       {!otpSent && <input type="hidden" name="otp" value="000000" />} 
       {/* Password */}
       <Field id="password" label="Password *" error={state?.field === "password" ? state.error : undefined}>
         <input
@@ -209,18 +208,19 @@ export default function RegisterForm() {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending || !otpSent}
+      //  disabled={isPending || !otpSent}
+        disabled={isPending}
         aria-busy={isPending}
         className="w-full bg-[#1a2744] text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isPending ? "Creating account…" : "Create Account"}
       </button>
 
-      {!otpSent && (
+       {!otpSent && (
         <p className="text-xs text-center text-[#1a2744]/40">
           Please verify your mobile number with OTP before submitting.
         </p>
-      )}
+      )} 
 
       <p className="text-xs text-center text-[#1a2744]/40">
         Already have an account?{" "}

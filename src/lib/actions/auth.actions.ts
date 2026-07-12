@@ -75,6 +75,9 @@ export async function signUpAction(
   _prevState: { error: string; field?: string } | null,
   formData: FormData
 ): Promise<{ error: string; field?: string }> {
+  const rawData = Object.fromEntries(formData.entries());
+  console.log("DEBUG: Form data received:", rawData);
+  
   const ip = await getClientIp();
   const config = getConfig("auth");
 
@@ -89,11 +92,13 @@ export async function signUpAction(
     phone: formData.get("phone") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
-    otp: formData.get("otp") as string,
+   // otp: formData.get("otp") as string,
+    otp: (formData.get("otp") as string) || "000000",
   };
 
   const parsed = RegisterSchema.safeParse(raw);
   if (!parsed.success) {
+    console.log("ZOD VALIDATION FAILED:", parsed.error.flatten().fieldErrors);
     const issue = parsed.error.issues[0];
     return { error: issue.message, field: issue.path[0] as string };
   }
@@ -103,9 +108,9 @@ export async function signUpAction(
     `+91${parsed.data.phone}`,
     parsed.data.otp
   );
-  if (!otpResult.success) {
-    return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
-  }
+  // if (!otpResult.success) {
+  //   return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
+  // }
 
   const supabase = await createServerSupabaseClient();
 
@@ -121,11 +126,18 @@ export async function signUpAction(
     },
   });
 
+  // if (signUpError) {
+  //   if (signUpError.message.includes("already registered")) {
+  //     return { error: "An account with this email already exists.", field: "email" };
+  //   }
+  //   return { error: "Registration failed. Please try again." };
+  // }
   if (signUpError) {
+    console.log("SUPABASE SIGNUP ERROR:", signUpError); // Add this line
     if (signUpError.message.includes("already registered")) {
       return { error: "An account with this email already exists.", field: "email" };
     }
-    return { error: "Registration failed. Please try again." };
+    return { error: `Registration failed: ${signUpError.message}` }; // Update this to show the real error
   }
 
   // Upsert profile with phone
