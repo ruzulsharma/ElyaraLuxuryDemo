@@ -66,14 +66,50 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* JSON-LD Structured Data — Organization + Local Business */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ClothingStore",
+              name: "Elyara by Sweety",
+              alternateName: "Elyara",
+              description:
+                "Bespoke Indian luxury fashion atelier specializing in custom-tailored avant-garde silhouettes, coord sets, and designer couture.",
+              url: "https://elyarabysweety.com",
+              logo: "https://elyarabysweety.com/assets/Logo.jpg",
+              image: "https://elyarabysweety.com/assets/hero_files/main1.jpg",
+              telephone: "+918796134073",
+              email: "elyarabysweety@gmail.com",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Noida",
+                addressRegion: "Uttar Pradesh",
+                addressCountry: "IN",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: 28.5355,
+                longitude: 77.391,
+              },
+              sameAs: [
+                "https://instagram.com/elyarabysweety",
+              ],
+              priceRange: "₹₹₹",
+              openingHoursSpecification: {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                opens: "11:00",
+                closes: "20:00",
+              },
+            }),
+          }}
+        />
+      </head>
       <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
-        {/*
-          PageIntro fires once per session (sessionStorage guard).
-          It is a client component and renders above everything else,
-          so it blocks interaction during the ~2.5 s intro duration.
-        */}
         <PageIntro />
-
         <CartProvider>
           <Navbar />
           <CartSidebar />

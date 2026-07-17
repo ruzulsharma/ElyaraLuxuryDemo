@@ -7,6 +7,7 @@ import CustomOrderBanner from "@/components/home/CustomOrderBanner";
 import BrandStory from "@/components/home/BrandStory";
 import Testimonials from "@/components/home/Testimonials";
 import NewsletterSection from "@/components/home/NewsletterSection";
+import GoldDivider from "@/components/ui/GoldDivider";
 
 export const metadata: Metadata = {
   title: "Elyara by Sweety — Bespoke Indian Luxury Fashion",
@@ -19,11 +20,13 @@ export default function HomePage() {
     <>
       <HeroSection />
       <FeaturedCollections />
+      <GoldDivider />
       <FeaturedProducts />
-      {/* Animated running-number stats: Styles · Reach · Variety */}
       <StatsSection />
       <CustomOrderBanner />
+      <GoldDivider className="bg-[#faf8f4]" />
       <BrandStory />
+      <GoldDivider className="bg-[#faf8f4]" />
       <Testimonials />
       <NewsletterSection />
     </>

@@ -82,30 +82,29 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-
-    // Fetch the profile to verify role from the database
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
-
-    // Deny access if not an admin
     if (!profile || profile.role !== 'admin') {
       return NextResponse.redirect(new URL("/shop", request.url));
     }
   }
 
-  // ── 2. Prevent logged-in users from hitting /login ────────────────────────
+  // ── 2. Protect /account — require auth ────────────────────────────────────
+  if (pathname.startsWith("/account") && !user) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // ── 3. Prevent logged-in users from hitting /login ────────────────────────
   if (pathname === "/login" && user) {
-    // Re-verify role to decide where to send them
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
-
-    const dest = profile?.role === 'admin' ? "/admin/dashboard" : "/shop";
+    const dest = profile?.role === 'admin' ? "/admin/dashboard" : "/account";
     return NextResponse.redirect(new URL(dest, request.url));
   }
 

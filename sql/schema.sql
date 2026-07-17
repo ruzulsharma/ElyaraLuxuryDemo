@@ -60,7 +60,8 @@ create table if not exists profiles (
   full_name   text,
   phone       text,
   created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  updated_at  timestamptz not null default now(),
+  role        text
 );
 
 create trigger profiles_set_updated_at

@@ -66,7 +66,7 @@ export async function signInAction(
     .eq("id", user?.id)
     .single();
 
-  const dest = profile?.role === "admin" ? "/admin/dashboard" : "/shop";
+  const dest = profile?.role === "admin" ? "/admin/dashboard" : "/account";
   redirect(dest);
 }
 
@@ -152,7 +152,7 @@ export async function signUpAction(
     });
   }
 
-  redirect("/shop");
+  redirect("/account");
 }
 
 // ─── Sign Out ─────────────────────────────────────────────────────────────────
