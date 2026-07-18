@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { COLLECTIONS, PRODUCTS } from "@/lib/data";
+import { COLLECTIONS } from "@/lib/data";
+import { getProducts } from "@/lib/products";
 
 interface CollectionPageProps {
   params: Promise<{ id: string }>;
@@ -27,7 +28,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   const collection = COLLECTIONS.find((c) => c.id === id);
   if (!collection) notFound();
 
-  const products = PRODUCTS.filter((p) => p.collection.toLowerCase().replace(/\s+/g, "-") === id || p.collection === collection.name);
+  const allProducts = await getProducts();
+  const products = allProducts.filter((p) => p.collection.toLowerCase().replace(/\s+/g, "-") === id || p.collection === collection.name);
 
   return (
     <div className="bg-[#faf8f4] min-h-screen">

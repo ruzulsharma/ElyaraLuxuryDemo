@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PRODUCTS } from "@/lib/data";
+import { getProductById, getProducts, getFeaturedProducts } from "@/lib/products";
 import ProductDetail from "@/components/shop/ProductDetail";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 
@@ -9,12 +9,13 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ id: p.id }));
+  const products = await getProducts();
+  return products.map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
-  const product = PRODUCTS.find((p) => p.id === id);
+  const product = await getProductById(id);
   if (!product) return { title: "Product Not Found" };
 
   return {
@@ -30,17 +31,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const product = PRODUCTS.find((p) => p.id === id);
+  const product = await getProductById(id);
 
   if (!product) notFound();
+
+  const featured = await getFeaturedProducts();
 
   return (
     <div className="bg-[#faf8f4] min-h-screen">
       <ProductDetail product={product} />
-
-      {/* Related Products */}
       <div className="border-t border-[#e8e0d0]">
-        <FeaturedProducts />
+        <FeaturedProducts products={featured} />
       </div>
     </div>
   );

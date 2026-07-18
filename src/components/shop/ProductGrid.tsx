@@ -3,7 +3,8 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { PRODUCTS, CATEGORIES } from "@/lib/data";
+import { CATEGORIES } from "@/lib/data";
+import type { Product } from "@/types/types";
 
 const STATUS_LABELS: Record<string, string> = {
   available: "Available",
@@ -27,17 +28,18 @@ const SORT_OPTIONS = [
 ];
 
 interface ProductGridProps {
+  products: Product[];
   initialCategory?: string;
   initialFilter?: string;
 }
 
-export default function ProductGrid({ initialCategory = "all", initialFilter }: ProductGridProps) {
+export default function ProductGrid({ products, initialCategory = "all", initialFilter }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sort, setSort] = useState("featured");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let list = PRODUCTS.filter((p) =>
+    let list = products.filter((p) =>
       activeCategory === "all" ? true : p.category === activeCategory
     );
 

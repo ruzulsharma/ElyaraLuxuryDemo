@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PRODUCTS } from "@/lib/data";
+import type { Product } from "@/types/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type OrderMode = "new-custom" | "customize-existing" | "";
@@ -40,7 +40,7 @@ const INITIAL_EXISTING: ExistingFields = {
 };
 
 // ─── WhatsApp message builder ─────────────────────────────────────────────────
-function buildWhatsAppMessage(mode: OrderMode, form: NewCustomFields | ExistingFields): string {
+function buildWhatsAppMessage(mode: OrderMode, form: NewCustomFields | ExistingFields, productList: Product[]): string {
   const base = `*Elyara Order Enquiry*\n\n*Name:* ${form.name}\n*Phone:* ${form.phone}\n*Email:* ${form.email}\n`;
 
   if (mode === "new-custom") {
@@ -51,7 +51,7 @@ function buildWhatsAppMessage(mode: OrderMode, form: NewCustomFields | ExistingF
   }
 
   const f = form as ExistingFields;
-  const product = PRODUCTS.find((p) => p.id === f.product);
+  const product = productList.find((p: Product) => p.id === f.product);
   const measurements = [
     f.height && `Height: ${f.height} cms`,
     f.chest && `Chest: ${f.chest}"`,
@@ -71,10 +71,11 @@ function buildWhatsAppMessage(mode: OrderMode, form: NewCustomFields | ExistingF
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface CustomOrderFormProps {
   preselectedProductId?: string;
+  products?: Product[];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function CustomOrderForm({ preselectedProductId }: CustomOrderFormProps) {
+export default function CustomOrderForm({ preselectedProductId, products = [] }: CustomOrderFormProps) {
   const [orderMode, setOrderMode] = useState<OrderMode>("");
   const [newForm, setNewForm] = useState<NewCustomFields>(INITIAL_NEW);
   const [existingForm, setExistingForm] = useState<ExistingFields>({
@@ -84,7 +85,7 @@ export default function CustomOrderForm({ preselectedProductId }: CustomOrderFor
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
 
-  const customizableProducts = PRODUCTS.filter((p) => p.isCustomizable);
+  const customizableProducts = products.filter((p) => p.isCustomizable);
 
   // ── Field updaters ──
   const updateNew = (field: keyof NewCustomFields, value: string) => {
@@ -132,7 +133,7 @@ export default function CustomOrderForm({ preselectedProductId }: CustomOrderFor
     if (!validate()) return;
 
     const form = orderMode === "new-custom" ? newForm : existingForm;
-    const waMsg = buildWhatsAppMessage(orderMode, form);
+    const waMsg = buildWhatsAppMessage(orderMode, form, products);
     const waUrl = `https://wa.me/918796134073?text=${waMsg}`;
 
     setSubmitted(true);

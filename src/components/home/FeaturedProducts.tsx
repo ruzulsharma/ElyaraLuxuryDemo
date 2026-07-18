@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { PRODUCTS } from "@/lib/data";
 import { useCart } from "@/context/CartContext";
+import type { Product } from "@/types/types";
 
 const STATUS_LABELS: Record<string, string> = {
   available: "Available",
@@ -20,10 +20,14 @@ const STATUS_COLORS: Record<string, string> = {
   limited: "text-[#c9a96e] bg-[#c9a96e]/10",
 };
 
-export default function FeaturedProducts() {
+interface FeaturedProductsProps {
+  products?: Product[];
+}
+
+export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { addToCart } = useCart();
-  const featured = PRODUCTS.slice(0, 4);
+  const featured = (products ?? []).slice(0, 4);
 
   return (
     <section className="bg-[#f5f0e8] py-20 px-4 sm:px-6">

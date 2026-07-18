@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CustomOrderForm from "@/components/custom-order/CustomOrderForm";
+import { getProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Custom Order — Made for Your Form",
@@ -13,6 +14,7 @@ interface CustomOrderPageProps {
 
 export default async function CustomOrderPage({ searchParams }: CustomOrderPageProps) {
   const params = await searchParams;
+  const products = await getProducts();
 
   return (
     <div className="bg-[#faf8f4] min-h-screen">
@@ -44,7 +46,7 @@ export default async function CustomOrderPage({ searchParams }: CustomOrderPageP
 
       {/* Form */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-        <CustomOrderForm preselectedProductId={params.product} />
+        <CustomOrderForm preselectedProductId={params.product} products={products} />
       </div>
     </div>
   );
