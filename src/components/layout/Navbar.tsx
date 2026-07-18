@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { signOutAction } from "@/lib/actions/auth.actions";
 import SearchModal from "@/components/layout/SearchModal";
 
 const NAV_LINKS = [
@@ -305,8 +306,8 @@ export default function Navbar() {
                   </Link>
                 </div>
 
-                {/* Logout — always visible, server action handles the redirect */}
-                <form action="/api/auth/signout" method="POST">
+                {/* Logout — uses server action for reliable redirect */}
+                <form action={signOutAction}>
                   <button
                     type="submit"
                     onClick={() => setIsMobileOpen(false)}

@@ -1,16 +1,36 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/auth/signout
- * Signs the user out and redirects to home.
- * Used by the mobile drawer logout button (form action POST).
+ * Signs the user out and redirects to home page.
  */
-export async function POST() {
-  const supabase = await createServerSupabaseClient();
-  await supabase.auth.signOut();
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient();
+    await supabase.auth.signOut();
+  } catch (e) {
+    // Log but don't block — user should still be redirected home
+    console.warn("[signout] Error during sign out:", e);
+  }
 
-  return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"), {
-    status: 302,
-  });
+  // Build absolute URL from the request origin (works in all environments)
+  const origin = request.nextUrl.origin;
+  return NextResponse.redirect(new URL("/", origin), { status: 302 });
+}
+
+/**
+ * GET /api/auth/signout
+ * Fallback for direct link navigation (in case form POST fails).
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient();
+    await supabase.auth.signOut();
+  } catch (e) {
+    console.warn("[signout] Error during sign out:", e);
+  }
+
+  const origin = request.nextUrl.origin;
+  return NextResponse.redirect(new URL("/", origin), { status: 302 });
 }
