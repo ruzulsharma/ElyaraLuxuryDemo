@@ -17,8 +17,9 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-[#faf8f4] border-t border-[#e8e0d0] safe-area-pb"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#faf8f4] border-t border-[#e8e0d0] safe-area-pb"
       aria-label="Mobile bottom navigation"
+      style={{ position: "fixed" }}
     >
       <div className="grid grid-cols-5 h-14">
         {/* Home */}
