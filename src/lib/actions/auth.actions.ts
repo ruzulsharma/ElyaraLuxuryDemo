@@ -92,8 +92,7 @@ export async function signUpAction(
     phone: formData.get("phone") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
-   // otp: formData.get("otp") as string,
-    otp: (formData.get("otp") as string) || "000000",
+    otp: formData.get("otp") as string,
   };
 
   const parsed = RegisterSchema.safeParse(raw);
@@ -108,9 +107,9 @@ export async function signUpAction(
     `+91${parsed.data.phone}`,
     parsed.data.otp
   );
-  // if (!otpResult.success) {
-  //   return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
-  // }
+  if (!otpResult.success) {
+    return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
+  }
 
   const supabase = await createServerSupabaseClient();
 

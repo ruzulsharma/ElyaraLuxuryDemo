@@ -178,8 +178,8 @@ export default function RegisterForm() {
         </Field>
       )}
 
-      {/* Hidden OTP field placeholder when not yet sent — ensures form submission doesn't fail */}
-       {!otpSent && <input type="hidden" name="otp" value="000000" />} 
+      {/* Hidden OTP placeholder — empty value forces user to verify first */}
+      {!otpSent && <input type="hidden" name="otp" value="" />}
       {/* Password */}
       <Field id="password" label="Password *" error={state?.field === "password" ? state.error : undefined}>
         <div className="relative">
@@ -250,8 +250,7 @@ export default function RegisterForm() {
       {/* Submit */}
       <button
         type="submit"
-      //  disabled={isPending || !otpSent}
-        disabled={isPending}
+        disabled={isPending || !otpSent}
         aria-busy={isPending}
         className="w-full bg-[#1a2744] text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
