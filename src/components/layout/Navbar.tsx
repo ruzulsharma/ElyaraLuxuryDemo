@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
-import { signOutAction } from "@/lib/actions/auth.actions";
 import SearchModal from "@/components/layout/SearchModal";
 
 const NAV_LINKS = [
@@ -307,19 +306,17 @@ export default function Navbar() {
                   </Link>
                 </div>
 
-                {/* Logout — uses server action for reliable redirect */}
-                <form action={signOutAction}>
-                  <button
-                    type="submit"
-                    onClick={() => setIsMobileOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Logout
-                  </button>
-                </form>
+                {/* Logout — navigates to signout API route */}
+                <a
+                  href="/api/auth/signout"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </a>
 
                 {/* Contact */}
                 <div className="pt-2 flex gap-5 text-xs text-[#1a2744]/40">

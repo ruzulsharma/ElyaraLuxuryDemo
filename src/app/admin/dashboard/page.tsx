@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { signOutAction } from "@/lib/actions/auth.actions";
 import OrdersTable from "@/components/admin/OrdersTable";
 import DashboardStats from "@/components/admin/DashboardStats";
 import CatalogPanel from "@/components/admin/CatalogPanel";
@@ -50,11 +51,22 @@ export default async function AdminDashboardPage({
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page header */}
-      <div className="border-b border-[#e8e0d0] pb-5">
-        <p className="text-xs tracking-[0.3em] uppercase text-[#c9a96e] font-medium mb-1">
-          Elyara Admin
+      <div className="border-b border-[#e8e0d0] pb-5 flex items-end justify-between">
+        <div>
+          <p className="text-xs tracking-[0.3em] uppercase text-[#c9a96e] font-medium mb-1">
+            Elyara Admin
         </p>
         <h1 className="text-2xl font-serif font-light text-[#1a2744]">Dashboard</h1>
+        </div>
+        {/* Logout button — small, top right */}
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="text-[10px] tracking-[0.15em] uppercase font-medium text-red-500 border border-red-200 px-3 py-1.5 hover:bg-red-50 hover:border-red-400 transition-colors"
+          >
+            Logout
+          </button>
+        </form>
       </div>
 
       {/* Stats row */}

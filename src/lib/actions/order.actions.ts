@@ -169,12 +169,14 @@ export async function verifyPaymentAction(input: {
 
 /**
  * Admin action — updates an order's status.
+ * Uses service role to bypass RLS (admin is already authenticated via middleware).
  */
 export async function updateOrderStatusAction(
   orderId: string,
   status: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createServerSupabaseClient();
+  const { createServiceRoleClient } = await import("@/lib/supabase/server");
+  const supabase = createServiceRoleClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from("orders")
@@ -182,7 +184,7 @@ export async function updateOrderStatusAction(
     .eq("id", orderId);
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: "Could not update order status. Please try again." };
   }
   return { success: true };
 }

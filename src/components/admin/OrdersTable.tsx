@@ -107,8 +107,6 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
         setMessage({ type: "error", text: "Network error. Please try again." });
       }
     });
-      }
-    });
   };
 
   if (orders.length === 0) {
