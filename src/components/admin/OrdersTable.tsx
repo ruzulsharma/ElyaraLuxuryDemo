@@ -7,22 +7,28 @@ import type { Database } from "@/types/database";
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 
 const STATUS_COLOURS: Record<string, string> = {
+  placed: "bg-amber-100 text-amber-800",
   pending_payment: "bg-yellow-100 text-yellow-800",
+  payment_confirmed: "bg-blue-100 text-blue-800",
   payment_failed: "bg-red-100 text-red-700",
   confirmed: "bg-blue-100 text-blue-800",
   in_production: "bg-purple-100 text-purple-800",
   shipped: "bg-indigo-100 text-indigo-800",
   delivered: "bg-emerald-100 text-emerald-800",
+  fulfilled: "bg-emerald-100 text-emerald-800",
   cancelled: "bg-gray-100 text-gray-600",
   refunded: "bg-orange-100 text-orange-700",
 };
 
 const STATUS_OPTIONS = [
+  "placed",
   "pending_payment",
+  "payment_confirmed",
   "confirmed",
   "in_production",
   "shipped",
   "delivered",
+  "fulfilled",
   "cancelled",
   "refunded",
 ];

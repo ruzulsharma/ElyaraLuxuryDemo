@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Script from "next/script";
 import { useCart } from "@/context/CartContext";
-import { createRazorpayOrderAction, verifyPaymentAction } from "@/lib/actions/order.actions";
+import { createRazorpayOrderAction, verifyPaymentAction, createUpiOrderAction } from "@/lib/actions/order.actions";
 import { CheckoutFormSchema, type CheckoutFormValues } from "@/lib/validations";
 import { useRouter } from "next/navigation";
 
@@ -73,37 +73,58 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Build order summary for WhatsApp
-    const orderItems = items
-      .map((i) => `• ${i.name}${i.size ? ` (${i.size})` : ""} ×${i.quantity} — ₹${(i.price * i.quantity).toLocaleString("en-IN")}`)
-      .join("\n");
+    startTransition(async () => {
+      // 1. Save order to Supabase with status "placed"
+      const result = await createUpiOrderAction({
+        formData,
+        items: items.map((i) => ({
+          productId: i.id,
+          productName: i.name,
+          styleNo: i.styleNo,
+          pricePaise: i.price * 100,
+          quantity: i.quantity,
+          size: i.size,
+          color: i.color,
+        })),
+      });
 
-    const address = [
-      formData.addressLine1,
-      formData.addressLine2,
-      `${formData.city}, ${formData.state} — ${formData.pincode}`,
-    ]
-      .filter(Boolean)
-      .join(", ");
+      if (!result.success) {
+        setServerError(result.error ?? "Could not place order.");
+        return;
+      }
 
-    const message = encodeURIComponent(
-      `*🛍️ New Order — Pay via UPI*\n\n` +
-      `*Customer:* ${formData.name}\n` +
-      `*Phone:* +91${formData.phone}\n` +
-      `*Email:* ${formData.email}\n` +
-      `*Address:* ${address}\n\n` +
-      `*Order:*\n${orderItems}\n\n` +
-      `*Total: ₹${subtotal.toLocaleString("en-IN")}*\n\n` +
-      `Please share your UPI ID or QR code for payment. 🙏`
-    );
+      // 2. Build WhatsApp message with order number
+      const orderItems = items
+        .map((i) => `• ${i.name}${i.size ? ` (${i.size})` : ""} ×${i.quantity} — ₹${(i.price * i.quantity).toLocaleString("en-IN")}`)
+        .join("\n");
 
-    // Open WhatsApp with pre-filled message to Elyara
-    const waUrl = `https://wa.me/918796134073?text=${message}`;
-    window.open(waUrl, "_blank", "noopener,noreferrer");
+      const address = [
+        formData.addressLine1,
+        formData.addressLine2,
+        `${formData.city}, ${formData.state} — ${formData.pincode}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
 
-    // Redirect to a confirmation-like state
-    clearCart();
-    router.push("/order-confirmed?method=upi");
+      const message = encodeURIComponent(
+        `*🛍️ New Order — Pay via UPI*\n\n` +
+        `*Order #:* ${result.orderNumber}\n` +
+        `*Customer:* ${formData.name}\n` +
+        `*Phone:* +91${formData.phone}\n` +
+        `*Email:* ${formData.email}\n` +
+        `*Address:* ${address}\n\n` +
+        `*Order:*\n${orderItems}\n\n` +
+        `*Total: ₹${subtotal.toLocaleString("en-IN")}*\n\n` +
+        `Please share your UPI ID or QR code for payment. 🙏`
+      );
+
+      const waUrl = `https://wa.me/918796134073?text=${message}`;
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+
+      // 3. Clear cart and redirect with order number
+      clearCart();
+      router.push(`/order-confirmed?ref=${result.orderNumber}&method=upi`);
+    });
   };
 
   const handlePayment = () => {

@@ -186,3 +186,99 @@ export async function updateOrderStatusAction(
   }
   return { success: true };
 }
+
+// ─── UPI Order (WhatsApp flow — no gateway) ──────────────────────────────────
+export interface CreateUpiOrderInput {
+  formData: {
+    name: string;
+    email: string;
+    phone: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  items: {
+    productId: string;
+    productName: string;
+    styleNo?: string;
+    pricePaise: number;
+    quantity: number;
+    size?: string;
+    color?: string;
+  }[];
+}
+
+export interface CreateUpiOrderResult {
+  success: boolean;
+  orderNumber?: string;
+  error?: string;
+}
+
+/**
+ * Creates an order in Supabase with status "placed" for UPI/WhatsApp payments.
+ * No payment gateway involved — admin manually confirms payment later.
+ */
+export async function createUpiOrderAction(
+  input: CreateUpiOrderInput
+): Promise<CreateUpiOrderResult> {
+  const { formData, items } = input;
+
+  // Basic validation
+  if (!formData.name || !formData.phone || !formData.addressLine1) {
+    return { success: false, error: "Missing required fields." };
+  }
+  if (!items || items.length === 0) {
+    return { success: false, error: "Cart is empty." };
+  }
+
+  const totalPaise = items.reduce((sum, i) => sum + i.pricePaise * i.quantity, 0);
+  const orderNumber = `ELY-${Date.now().toString(36).toUpperCase()}`;
+
+  const shippingAddress: ShippingAddress = {
+    line1: formData.addressLine1,
+    line2: formData.addressLine2 || undefined,
+    city: formData.city,
+    state: formData.state,
+    pincode: formData.pincode,
+  };
+
+  const lineItems: OrderLineItem[] = items.map((i) => ({
+    product_id: i.productId,
+    product_name: i.productName,
+    style_no: i.styleNo ?? "",
+    price_paise: i.pricePaise,
+    quantity: i.quantity,
+    size: i.size,
+    color: i.color,
+  }));
+
+  const supabase = await createServerSupabaseClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: dbError } = await (supabase as any)
+    .from("orders")
+    .insert({
+      order_number: orderNumber,
+      status: "placed",
+      customer_name: formData.name,
+      customer_email: formData.email || "",
+      customer_phone: formData.phone,
+      shipping_address: shippingAddress,
+      items: lineItems,
+      subtotal_paise: totalPaise,
+      shipping_paise: 0,
+      total_paise: totalPaise,
+      razorpay_order_id: null,
+      paid_at: null,
+      notes: "Payment method: UPI via WhatsApp",
+    });
+
+  if (dbError) {
+    console.error("[createUpiOrderAction] DB error:", dbError);
+    return { success: false, error: "Could not save order. Please try again." };
+  }
+
+  return { success: true, orderNumber };
+}
