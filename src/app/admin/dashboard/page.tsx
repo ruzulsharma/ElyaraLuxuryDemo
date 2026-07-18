@@ -14,14 +14,28 @@ export default async function AdminDashboardPage({
   const { tab = "orders" } = await searchParams;
 
   const supabase = await createServerSupabaseClient();
-  const { data: orders, error } = await supabase
-    .from("orders" as "orders")
+
+  // Fetch orders
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: orders, error } = await (supabase as any)
+    .from("orders")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(100);
 
   if (error) {
-    console.error("[AdminDashboard] Supabase error:", error);
+    console.error("[AdminDashboard] Orders fetch error:", error);
+  }
+
+  // Fetch products from Supabase for the catalog tab
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: products, error: productsError } = await (supabase as any)
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (productsError) {
+    console.error("[AdminDashboard] Products fetch error:", productsError);
   }
 
   // ── Stats aggregation ─────────────────────────────────────────────────────
@@ -70,7 +84,7 @@ export default async function AdminDashboardPage({
 
       {/* Tab panels */}
       {tab === "orders" && <OrdersTable orders={allOrders} />}
-      {tab === "catalog" && <CatalogPanel />}
+      {tab === "catalog" && <CatalogPanel products={products ?? []} />}
     </div>
   );
 }

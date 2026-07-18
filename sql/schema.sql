@@ -104,3 +104,51 @@ create index if not exists orders_customer_email_idx on orders (customer_email);
 create index if not exists orders_razorpay_order_id_idx on orders (razorpay_order_id);
 create index if not exists orders_status_idx on orders (status);
 create index if not exists orders_created_at_idx on orders (created_at desc);
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Products table — admin-managed catalog stored in Supabase
+-- ═══════════════════════════════════════════════════════════════════════════
+
+create type product_status as enum (
+  'available',
+  'made-to-order',
+  'sold-out',
+  'limited'
+);
+
+create table if not exists products (
+  id               uuid primary key default uuid_generate_v4(),
+  name             text not null,
+  style_no         text not null,
+  price            integer not null check (price > 0),          -- in rupees (whole number)
+  original_price   integer,                                      -- for showing discount
+  category         text not null,
+  collection       text not null default 'Signature Edit',
+  description      text not null,
+  images           text[] not null default '{}',                  -- array of URL strings
+  is_bestseller    boolean not null default false,
+  is_new           boolean not null default false,
+  is_customizable  boolean not null default true,
+  status           product_status not null default 'available',
+  sizes            text[] not null default '{}',
+  colors           text[] not null default '{}',
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+
+-- Auto-update updated_at
+create trigger products_set_updated_at
+  before update on products
+  for each row execute function set_updated_at();
+
+-- RLS: public can read products, only service role (admin) can write
+alter table products enable row level security;
+
+create policy "Public can read products"
+  on products for select
+  using (true);
+
+-- Index for fast queries
+create index if not exists products_category_idx on products (category);
+create index if not exists products_collection_idx on products (collection);
+create index if not exists products_status_idx on products (status);
