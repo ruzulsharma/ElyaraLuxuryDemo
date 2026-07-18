@@ -152,3 +152,29 @@ create policy "Public can read products"
 create index if not exists products_category_idx on products (category);
 create index if not exists products_collection_idx on products (collection);
 create index if not exists products_status_idx on products (status);
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Storage bucket for product images
+-- Run this separately OR via the Supabase Dashboard → Storage → New Bucket
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Create the bucket (if using SQL — otherwise create via Dashboard)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true);
+
+-- RLS: Anyone can read images (public bucket)
+-- CREATE POLICY "Public read for product images"
+--   ON storage.objects FOR SELECT
+--   USING (bucket_id = 'product-images');
+
+-- RLS: Only authenticated users (admin) can upload
+-- CREATE POLICY "Admin upload for product images"
+--   ON storage.objects FOR INSERT
+--   WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+-- NOTE: The easiest way is to create the bucket via Supabase Dashboard:
+-- 1. Go to Storage → New Bucket
+-- 2. Name: "product-images"
+-- 3. Set to Public
+-- 4. Max file size: 2MB
+-- 5. Allowed MIME types: image/jpeg, image/png, image/webp

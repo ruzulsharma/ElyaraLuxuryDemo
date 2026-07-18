@@ -198,7 +198,7 @@ export const COLLECTIONS = [
     tagline: "Your vision. Our craft.",
     description:
       "No catalogue number. No standard size. You describe it, we build it — from bridal ensembles to party wear. Send us your reference images, measurements, and occasion details.",
-    image: "/assets/hero_files/Hero2.jpg",
+    image: "/assets/hero_files/Custom.jpeg",
     pieceCount: 0,
     year: "Always Open",
   },

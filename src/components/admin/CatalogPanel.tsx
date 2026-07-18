@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
+import ImageUploader from "@/components/admin/ImageUploader";
 import {
   createProductAction,
   updateProductAction,
@@ -183,11 +184,14 @@ export default function CatalogPanel({ products }: CatalogPanelProps) {
               </div>
             </div>
 
-            {/* Images */}
-            <div>
-              <label className="block text-[10px] tracking-[0.15em] uppercase text-[#1a2744]/60 font-medium mb-1">Image URLs * (comma-separated)</label>
-              <input name="images" defaultValue={editingProduct?.images?.join(", ") ?? ""} required className={inputCls} placeholder="/assets/cat1.jpg, /assets/cat2.jpg" />
-            </div>
+            {/* Images — upload component */}
+            <ImageUploader
+              existingImages={editingProduct?.images ?? []}
+              onImagesChange={(urls) => {
+                // URLs are stored in the hidden input inside ImageUploader
+                // They'll be submitted as comma-separated via the hidden name="images" input
+              }}
+            />
 
             {/* Description */}
             <div>
