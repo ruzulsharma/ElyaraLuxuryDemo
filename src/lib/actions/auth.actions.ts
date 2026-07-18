@@ -193,3 +193,69 @@ async function verifyOtpServer(
     return { success: false };
   }
 }
+
+// ─── Forgot Password (send reset email) ──────────────────────────────────────
+export async function forgotPasswordAction(
+  _prevState: { error: string; success: boolean } | null,
+  formData: FormData
+): Promise<{ error: string; success: boolean }> {
+  const ip = await getClientIp();
+  const config = getConfig("auth");
+
+  // Rate limit — strict on password reset to prevent abuse
+  const ipCheck = checkRateLimit(buildKey("auth", `reset-ip:${ip}`), config);
+  if (!ipCheck.allowed) {
+    return { error: `Too many requests. Please wait ${ipCheck.retryAfter}s.`, success: false };
+  }
+
+  const email = (formData.get("email") as string | null)?.trim().toLowerCase() ?? "";
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Please enter a valid email address.", success: false };
+  }
+
+  const supabase = await createServerSupabaseClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback?type=recovery`,
+  });
+
+  // Always show success — don't reveal if email exists
+  if (error) {
+    console.error("[forgotPasswordAction]", error.message);
+  }
+
+  return { error: "", success: true };
+}
+
+// ─── Reset Password (set new password after clicking email link) ──────────────
+export async function resetPasswordAction(
+  _prevState: { error: string; success: boolean } | null,
+  formData: FormData
+): Promise<{ error: string; success: boolean }> {
+  const password = (formData.get("password") as string | null) ?? "";
+  const confirmPassword = (formData.get("confirmPassword") as string | null) ?? "";
+
+  // Strict validation
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters.", success: false };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { error: "Password must contain at least one uppercase letter.", success: false };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { error: "Password must contain at least one number.", success: false };
+  }
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match.", success: false };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    console.error("[resetPasswordAction]", error.message);
+    return { error: "Failed to update password. The link may have expired — request a new one.", success: false };
+  }
+
+  return { error: "", success: true };
+}
