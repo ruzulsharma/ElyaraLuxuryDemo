@@ -48,47 +48,75 @@ export default function Navbar() {
             : "bg-[#faf8f4] border-b border-[#e8e0d0]"
         }`}
       >
-        {/* ── MOBILE NAV ─────────────────────────────────────────────────── */}
-        <div className="md:hidden grid grid-cols-3 items-center h-16 px-4">
-          {/* Left — hamburger */}
-          <button
-            onClick={() => setIsMobileOpen(true)}
-            aria-label="Open menu"
-            aria-expanded={isMobileOpen}
-            className="text-[#1a2744] p-1 -ml-1"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          {/* Centre — wordmark */}
-          <Link href="/" className="flex flex-col items-center justify-center leading-none" aria-label="Elyara home">
-            <span className="font-serif text-[1.3rem] font-bold tracking-[0.22em] text-[#1a2744] uppercase">
-              ELYARA
-            </span>
-            <span className="text-[9px] tracking-[0.25em] text-[#c9a96e] uppercase font-medium mt-0.5">
-              By Sweety
-            </span>
-          </Link>
-
-          {/* Right — search + cart */}
-          <div className="flex items-center justify-end gap-3 text-[#1a2744]">
-            <button onClick={() => setIsSearchOpen(true)} aria-label="Search">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
+        {/* ── MOBILE NAV (Snitch-style) ─────────────────────────────────── */}
+        <div className="md:hidden">
+          {/* Row 1: hamburger | search bar | cart */}
+          <div className="flex items-center gap-3 h-14 px-4">
+            {/* Hamburger */}
+            <button
+              onClick={() => setIsMobileOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMobileOpen}
+              className="text-[#1a2744] flex-shrink-0"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <button onClick={openCart} className="relative" aria-label={`Cart — ${totalItems} items`}>
+
+            {/* Search bar — tap to open modal */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex-1 flex items-center gap-2 bg-[#f5f0e8] border border-[#e8e0d0] rounded-sm px-3 py-2 text-left"
+              aria-label="Search products"
+            >
+              <svg className="w-4 h-4 text-[#1a2744]/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1116.65 2a7.5 7.5 0 010 14.65z" />
+              </svg>
+              <span className="text-xs text-[#1a2744]/40 tracking-wide truncate">Search &quot;Coord Sets&quot;</span>
+            </button>
+
+            {/* Cart */}
+            <button
+              onClick={openCart}
+              className="relative text-[#1a2744] flex-shrink-0"
+              aria-label={`Cart — ${totalItems} items`}
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold">
                   {totalItems}
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Row 2: horizontal category scroll strip */}
+          <div className="overflow-x-auto scrollbar-hide border-t border-[#e8e0d0]">
+            <div className="flex gap-0 px-4 py-2 min-w-max">
+              {[
+                { label: "Discover", href: "/shop" },
+                { label: "Coord Sets", href: "/shop?category=coord-sets" },
+                { label: "Dresses", href: "/shop?category=dresses" },
+                { label: "Tops", href: "/shop?category=tops" },
+                { label: "Custom Order", href: "/custom-order" },
+                { label: "New In", href: "/collections" },
+              ].map((cat, i) => (
+                <Link
+                  key={cat.href}
+                  href={cat.href}
+                  className={`px-3 py-1 text-[11px] tracking-[0.1em] font-medium whitespace-nowrap transition-colors ${
+                    i === 0
+                      ? "text-[#1a2744] border-b-2 border-[#1a2744]"
+                      : "text-[#1a2744]/50 hover:text-[#1a2744]"
+                  }`}
+                >
+                  {cat.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
