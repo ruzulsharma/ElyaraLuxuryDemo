@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateOrderStatusAction } from "@/lib/actions/order.actions";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +72,7 @@ function buildWhatsAppUrl(order: Order, statusOverride?: string): string {
 }
 
 export default function OrdersTable({ orders }: { orders: Order[] }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<Record<string, string>>({});
@@ -80,19 +82,31 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
     const newStatus = selectedStatus[orderId];
     if (!newStatus) return;
 
+    // Build WhatsApp URL BEFORE the async call (avoids issues with re-render)
+    const waUrl = buildWhatsAppUrl(order, newStatus);
+
     startTransition(async () => {
-      const result = await updateOrderStatusAction(orderId, newStatus);
-      if (result.success) {
-        setMessage({ type: "success", text: "Status updated! Opening WhatsApp to notify customer…" });
-        setExpandedId(null);
+      try {
+        const result = await updateOrderStatusAction(orderId, newStatus);
+        if (result.success) {
+          setMessage({ type: "success", text: "Status updated! Opening WhatsApp…" });
+          setExpandedId(null);
+          setTimeout(() => setMessage(null), 4000);
 
-        // Auto-open WhatsApp with the NEW status
-        const waUrl = buildWhatsAppUrl(order, newStatus);
-        window.open(waUrl, "_blank", "noopener,noreferrer");
+          // Open WhatsApp after a short delay to avoid popup blockers
+          setTimeout(() => {
+            window.open(waUrl, "_blank", "noopener,noreferrer");
+          }, 300);
 
-        setTimeout(() => setMessage(null), 4000);
-      } else {
-        setMessage({ type: "error", text: result.error ?? "Failed to update." });
+          // Refresh the page data to show new status
+          router.refresh();
+        } else {
+          setMessage({ type: "error", text: result.error ?? "Failed to update." });
+        }
+      } catch {
+        setMessage({ type: "error", text: "Network error. Please try again." });
+      }
+    });
       }
     });
   };
