@@ -47,9 +47,9 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
   }
 
-  /* Used by StatsSection gold rule animation */
-  .origin-center-h {
-    transform-origin: center;
+  /* Safe area padding for iPhone home indicator */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 

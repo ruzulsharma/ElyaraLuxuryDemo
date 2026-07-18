@@ -8,6 +8,7 @@ import BrandStory from "@/components/home/BrandStory";
 import Testimonials from "@/components/home/Testimonials";
 import NewsletterSection from "@/components/home/NewsletterSection";
 import GoldDivider from "@/components/ui/GoldDivider";
+import ScrollMarquee from "@/components/ui/ScrollMarquee";
 
 export const metadata: Metadata = {
   title: "Elyara by Sweety — Bespoke Indian Luxury Fashion",
@@ -19,6 +20,8 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      {/* Scroll-velocity marquee strip */}
+      <ScrollMarquee />
       <FeaturedCollections />
       <GoldDivider />
       <FeaturedProducts />
@@ -26,7 +29,8 @@ export default function HomePage() {
       <CustomOrderBanner />
       <GoldDivider className="bg-[#faf8f4]" />
       <BrandStory />
-      <GoldDivider className="bg-[#faf8f4]" />
+      {/* Second marquee between brand story and testimonials */}
+      <ScrollMarquee className="bg-[#f5f0e8] border-y border-[#e8e0d0]" />
       <Testimonials />
       <NewsletterSection />
     </>

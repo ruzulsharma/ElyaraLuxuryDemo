@@ -245,25 +245,51 @@ export default function Navbar() {
                 </nav>
               </div>
 
-              {/* Footer — auth actions */}
+              {/* Footer — auth & account actions */}
               <div className="px-6 py-5 border-t border-[#e8e0d0] space-y-3">
+                {/* My Account */}
                 <Link
-                  href="/login"
+                  href="/account"
                   onClick={() => setIsMobileOpen(false)}
                   className="flex items-center justify-center gap-2 w-full py-3 bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  Sign In
+                  My Account
                 </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center justify-center w-full py-3 border-2 border-[#1a2744] text-[#1a2744] text-xs tracking-[0.2em] uppercase font-bold hover:border-[#c9a96e] hover:text-[#c9a96e] transition-colors"
-                >
-                  Create Account
-                </Link>
+
+                {/* Sign In / Register — for users who aren't logged in */}
+                <div className="flex gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex-1 text-center py-2.5 border border-[#e8e0d0] text-[#1a2744] text-[10px] tracking-[0.2em] uppercase font-medium hover:border-[#c9a96e] hover:text-[#c9a96e] transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex-1 text-center py-2.5 border border-[#e8e0d0] text-[#1a2744] text-[10px] tracking-[0.2em] uppercase font-medium hover:border-[#c9a96e] hover:text-[#c9a96e] transition-colors"
+                  >
+                    Register
+                  </Link>
+                </div>
+
+                {/* Logout — always visible, server action handles the redirect */}
+                <form action="/api/auth/signout" method="POST">
+                  <button
+                    type="submit"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 text-[10px] tracking-[0.2em] uppercase font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </button>
+                </form>
 
                 {/* Contact */}
                 <div className="pt-2 flex gap-5 text-xs text-[#1a2744]/40">

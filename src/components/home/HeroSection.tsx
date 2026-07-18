@@ -77,14 +77,11 @@ export default function HeroSection() {
     <section
       className="relative h-[90vh] min-h-[600px] overflow-hidden bg-[#1a2744]"
       aria-label="Hero banner — swipe to browse"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
-      {/* ── Video background ── */}
+      {/* ── Video background (non-interactive) ── */}
       <video
         ref={videoRef}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 pointer-events-none ${videoLoaded ? "opacity-100" : "opacity-0"}`}
         src="/assets/Vid/Vid1.MP4"
         autoPlay
         muted
@@ -96,13 +93,22 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      {/* Fallback while loading */}
+      {/* Fallback while loading (non-interactive) */}
       {!videoLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2744] via-[#2d3f6b] to-[#1a2744]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2744] via-[#2d3f6b] to-[#1a2744] pointer-events-none" />
       )}
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1a2744]/80 via-[#1a2744]/50 to-[#1a2744]/20" />
+      {/* Overlay (non-interactive) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#1a2744]/80 via-[#1a2744]/50 to-[#1a2744]/20 pointer-events-none" />
+
+      {/* ── Swipe capture layer — sits above video, below content ── */}
+      <div
+        className="absolute inset-0 z-[5]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        aria-hidden="true"
+      />
 
       {/* ── Content ── */}
       <div className="relative z-10 h-full flex items-center">

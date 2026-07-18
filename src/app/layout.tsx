@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { CartProvider } from "@/context/CartContext";
 import PageIntro from "@/components/ui/PageIntro";
+import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -110,11 +112,14 @@ export default function RootLayout({
       </head>
       <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
         <PageIntro />
+        <CustomCursor />
         <CartProvider>
           <Navbar />
           <CartSidebar />
-          <main id="main-content">{children}</main>
+          {/* pb-16 on mobile for bottom nav clearance */}
+          <main id="main-content" className="pb-16 md:pb-0">{children}</main>
           <Footer />
+          <MobileBottomNav />
         </CartProvider>
       </body>
     </html>
