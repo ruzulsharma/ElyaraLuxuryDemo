@@ -4,6 +4,27 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { z } from "zod";
 
+// ── Friendly error messages for common Supabase errors ───────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function friendlyDbError(error: any): string {
+  const code = error?.code;
+  const msg = error?.message ?? "";
+
+  if (code === "42501" || msg.includes("row-level security")) {
+    return "Permission denied. Please ensure you're logged in as admin. If this persists, check Supabase RLS policies.";
+  }
+  if (code === "23505" || msg.includes("duplicate key")) {
+    return "A product with this style number already exists.";
+  }
+  if (code === "23502" || msg.includes("not-null")) {
+    return "A required field is missing. Please fill all fields marked with *.";
+  }
+  if (msg.includes("JWT")) {
+    return "Your session has expired. Please log out and sign in again.";
+  }
+  return `Database error: ${msg}. Please try again or contact support.`;
+}
+
 // ── Strict schema for product input ──────────────────────────────────────────
 const ProductFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -76,7 +97,7 @@ export async function createProductAction(
 
   if (error) {
     console.error("[createProductAction]", error);
-    return { success: false, error: error.message };
+    return { success: false, error: friendlyDbError(error) };
   }
 
   revalidatePath("/admin/dashboard");
@@ -134,7 +155,7 @@ export async function updateProductAction(
 
   if (error) {
     console.error("[updateProductAction]", error);
-    return { success: false, error: error.message };
+    return { success: false, error: friendlyDbError(error) };
   }
 
   revalidatePath("/admin/dashboard");
@@ -154,7 +175,7 @@ export async function deleteProductAction(
 
   if (error) {
     console.error("[deleteProductAction]", error);
-    return { success: false, error: error.message };
+    return { success: false, error: friendlyDbError(error) };
   }
 
   revalidatePath("/admin/dashboard");

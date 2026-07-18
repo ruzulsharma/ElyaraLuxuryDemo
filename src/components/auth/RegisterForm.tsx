@@ -121,65 +121,31 @@ export default function RegisterForm() {
         />
       </Field>
 
-      {/* Mobile + Send OTP */}
-      <Field id="phone" label="Mobile Number (India) *" error={otpError || (state?.field === "phone" ? state.error : undefined)}>
-        <div className="flex gap-2">
-          {/* +91 prefix */}
-          <div className="flex border border-[#e8e0d0] flex-1">
-            <span className="px-3 py-3 text-sm text-[#1a2744]/50 border-r border-[#e8e0d0] select-none bg-[#f5f0e8]">
-              +91
-            </span>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputMode="numeric"
-              required
-              maxLength={10}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-              className="flex-1 bg-transparent px-3 py-3 text-sm text-[#1a2744] focus:outline-none"
-              placeholder="9876543210"
-              aria-label="Mobile number"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={handleSendOtp}
-            disabled={otpSending || phone.length !== 10}
-            className="flex-shrink-0 bg-[#1a2744] text-white text-xs tracking-[0.15em] uppercase font-medium px-4 py-3 hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-          >
-            {otpSending ? "Sending…" : otpSent ? "Resend" : "Send OTP"}
-          </button>
-        </div>
-        {otpSuccess && (
-          <p className="text-emerald-600 text-xs mt-1">{otpSuccess}</p>
-        )}
-      </Field>
-
-      {/* OTP field — visible only after send */}
-      {otpSent && (
-        <Field id="otp" label="Enter OTP *" error={state?.field === "otp" ? state.error : undefined}>
+      {/* Mobile — simple input, no OTP for now */}
+      <Field id="phone" label="Mobile Number (India) *" error={state?.field === "phone" ? state.error : undefined}>
+        <div className="flex border border-[#e8e0d0]">
+          <span className="px-3 py-3 text-sm text-[#1a2744]/50 border-r border-[#e8e0d0] select-none bg-[#f5f0e8]">
+            +91
+          </span>
           <input
-            id="otp"
-            name="otp"
-            type="text"
+            id="phone"
+            name="phone"
+            type="tel"
             inputMode="numeric"
             required
-            maxLength={6}
-            pattern="\d{6}"
-            className={inputCls}
-            placeholder="6-digit code"
-            aria-describedby="otp-hint"
+            maxLength={10}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+            className="flex-1 bg-transparent px-3 py-3 text-sm text-[#1a2744] focus:outline-none"
+            placeholder="9876543210"
+            aria-label="Mobile number"
           />
-          <p id="otp-hint" className="text-xs text-[#1a2744]/40 mt-1">
-            Enter the 6-digit OTP sent to +91 {phone}
-          </p>
-        </Field>
-      )}
+        </div>
+      </Field>
 
-      {/* Hidden OTP placeholder — empty value forces user to verify first */}
-      {!otpSent && <input type="hidden" name="otp" value="" />}
+      {/* Hidden OTP field — always passes "000000" since OTP is disabled */}
+      <input type="hidden" name="otp" value="000000" />
+
       {/* Password */}
       <Field id="password" label="Password *" error={state?.field === "password" ? state.error : undefined}>
         <div className="relative">
@@ -250,18 +216,12 @@ export default function RegisterForm() {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending || !otpSent}
+        disabled={isPending}
         aria-busy={isPending}
         className="w-full bg-[#1a2744] text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isPending ? "Creating account…" : "Create Account"}
       </button>
-
-       {!otpSent && (
-        <p className="text-xs text-center text-[#1a2744]/40">
-          Please verify your mobile number with OTP before submitting.
-        </p>
-      )} 
 
       <p className="text-xs text-center text-[#1a2744]/40">
         Already have an account?{" "}

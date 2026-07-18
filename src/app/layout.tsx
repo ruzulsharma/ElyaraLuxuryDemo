@@ -67,10 +67,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        {/* JSON-LD Structured Data — Organization + Local Business */}
+      <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
+        {/* JSON-LD Structured Data — rendered in body (valid for SEO) */}
         <script
           type="application/ld+json"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -95,9 +96,7 @@ export default function RootLayout({
                 latitude: 28.5355,
                 longitude: 77.391,
               },
-              sameAs: [
-                "https://instagram.com/elyarabysweety",
-              ],
+              sameAs: ["https://instagram.com/elyarabysweety"],
               priceRange: "₹₹₹",
               openingHoursSpecification: {
                 "@type": "OpeningHoursSpecification",
@@ -108,8 +107,6 @@ export default function RootLayout({
             }),
           }}
         />
-      </head>
-      <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
         <PageIntro />
         <CartProvider>
           <Navbar />

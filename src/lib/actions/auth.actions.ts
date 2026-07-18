@@ -92,24 +92,24 @@ export async function signUpAction(
     phone: formData.get("phone") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
-    otp: formData.get("otp") as string,
+    // OTP disabled for now — no Twilio dependency
+    otp: (formData.get("otp") as string) || "000000",
   };
 
   const parsed = RegisterSchema.safeParse(raw);
   if (!parsed.success) {
-    console.log("ZOD VALIDATION FAILED:", parsed.error.flatten().fieldErrors);
     const issue = parsed.error.issues[0];
     return { error: issue.message, field: issue.path[0] as string };
   }
 
-  // Verify OTP via Twilio before creating the user
-  const otpResult = await verifyOtpServer(
-    `+91${parsed.data.phone}`,
-    parsed.data.otp
-  );
-  if (!otpResult.success) {
-    return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
-  }
+  // ── OTP verification DISABLED — uncomment when Twilio is configured ──
+  // const otpResult = await verifyOtpServer(
+  //   `+91${parsed.data.phone}`,
+  //   parsed.data.otp
+  // );
+  // if (!otpResult.success) {
+  //   return { error: "Invalid or expired OTP. Please try again.", field: "otp" };
+  // }
 
   const supabase = await createServerSupabaseClient();
 

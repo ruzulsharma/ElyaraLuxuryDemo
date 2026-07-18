@@ -1,6 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { lookupOrderAction } from "@/lib/actions/order.actions";
+
+const STATUS_STEPS = [
+  { key: "created", label: "Order Created", icon: "📝" },
+  { key: "placed", label: "Payment Verified", icon: "✅" },
+  { key: "shipped", label: "Shipped", icon: "🚚" },
+  { key: "fulfilled", label: "Delivered", icon: "🎉" },
+];
+
+const STATUS_COLOURS: Record<string, string> = {
+  placed: "bg-amber-100 text-amber-800",
+  pending_payment: "bg-yellow-100 text-yellow-800",
+  payment_confirmed: "bg-blue-100 text-blue-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  in_production: "bg-purple-100 text-purple-800",
+  shipped: "bg-indigo-100 text-indigo-800",
+  delivered: "bg-emerald-100 text-emerald-800",
+  fulfilled: "bg-emerald-100 text-emerald-800",
+  cancelled: "bg-gray-100 text-gray-600",
+};
 
 interface OrderResult {
   order_number: string;
@@ -9,172 +29,150 @@ interface OrderResult {
   total_paise: number;
   items: { product_name: string; quantity: number }[];
   created_at: string;
-  notes: string | null;
+  shipping_address: { city: string; state: string; pincode: string };
 }
 
-const STATUS_STEPS = ["placed", "payment_confirmed", "in_production", "shipped", "fulfilled"];
-
-const STATUS_LABELS: Record<string, string> = {
-  placed: "Order Placed",
-  pending_payment: "Awaiting Payment",
-  payment_confirmed: "Payment Confirmed",
-  confirmed: "Confirmed",
-  in_production: "Being Crafted",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  fulfilled: "Fulfilled",
-  cancelled: "Cancelled",
-};
-
 export default function TrackOrderClient() {
-  const [orderId, setOrderId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
   const [order, setOrder] = useState<OrderResult | null>(null);
   const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setOrder(null);
-
-    const trimmed = orderId.trim();
+  const handleSearch = () => {
+    const trimmed = orderNumber.trim().toUpperCase();
     if (!trimmed) {
-      setError("Please enter an order number.");
+      setError("Please enter your order number.");
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/orders/track?id=${encodeURIComponent(trimmed)}`);
-      const data = await res.json();
+    setError("");
+    setOrder(null);
 
-      if (!res.ok) {
-        setError(data.error ?? "Order not found.");
+    startTransition(async () => {
+      const result = await lookupOrderAction(trimmed);
+      if (result.success && result.order) {
+        setOrder(result.order as unknown as OrderResult);
       } else {
-        setOrder(data.order);
+        setError(result.error ?? "Order not found. Please check the order number and try again.");
       }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
-  const currentStep = order ? STATUS_STEPS.indexOf(order.status) : -1;
+  // Determine which step is active
+  const currentStepIndex = STATUS_STEPS.findIndex((s) => s.key === order?.status);
+  const activeStep = currentStepIndex >= 0 ? currentStepIndex : -1;
 
   return (
     <div className="space-y-8">
-      {/* Search form */}
-      <form onSubmit={handleTrack} className="space-y-4">
-        <div>
-          <label htmlFor="orderId" className="block text-xs tracking-[0.2em] uppercase text-[#1a2744] font-medium mb-2">
-            Order Number
-          </label>
+      {/* Search box */}
+      <div className="bg-white border border-[#e8e0d0] p-6 space-y-4">
+        <label className="block text-xs tracking-[0.2em] uppercase text-[#1a2744] font-medium">
+          Order Number
+        </label>
+        <div className="flex gap-3">
           <input
-            id="orderId"
             type="text"
-            value={orderId}
-            onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-            placeholder="e.g. ELY-M4K8XY2"
-            className="w-full border border-[#e8e0d0] bg-transparent px-4 py-3 text-sm text-[#1a2744] focus:outline-none focus:border-[#c9a96e] transition-colors uppercase font-mono"
+            value={orderNumber}
+            onChange={(e) => { setOrderNumber(e.target.value); setError(""); }}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            placeholder="e.g. ELY-M1K2ABC"
+            className="flex-1 border border-[#e8e0d0] bg-transparent px-4 py-3 text-sm text-[#1a2744] focus:outline-none focus:border-[#c9a96e] transition-colors uppercase"
           />
+          <button
+            onClick={handleSearch}
+            disabled={isPending}
+            className="bg-[#1a2744] text-white text-xs tracking-[0.2em] uppercase font-bold px-6 py-3 hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            {isPending ? "Searching…" : "Track"}
+          </button>
         </div>
-
         {error && (
-          <p role="alert" className="text-red-500 text-sm">{error}</p>
+          <p role="alert" className="text-red-500 text-xs">{error}</p>
         )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-[#1a2744] text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-[#c9a96e] hover:text-[#1a2744] transition-colors disabled:opacity-60"
-        >
-          {loading ? "Searching…" : "Track Order"}
-        </button>
-      </form>
+        <p className="text-[10px] text-[#1a2744]/40">
+          Your order number was shared via WhatsApp or on the confirmation page after checkout.
+        </p>
+      </div>
 
       {/* Order result */}
       {order && (
-        <div className="bg-white border border-[#e8e0d0] p-6 space-y-5">
+        <div className="bg-white border border-[#e8e0d0] p-6 space-y-6">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="font-mono text-xs text-[#c9a96e] font-medium">{order.order_number}</p>
-              <p className="text-sm font-medium text-[#1a2744] mt-0.5">{order.customer_name}</p>
+              <p className="text-sm font-medium text-[#1a2744] mt-1">{order.customer_name}</p>
               <p className="text-xs text-[#1a2744]/50">
                 {new Date(order.created_at).toLocaleDateString("en-IN", {
-                  day: "numeric", month: "short", year: "numeric"
+                  day: "numeric", month: "short", year: "numeric",
                 })}
               </p>
             </div>
-            <p className="text-base font-bold text-[#1a2744]">
-              ₹{((order.total_paise ?? 0) / 100).toLocaleString("en-IN")}
+            <div className="text-right">
+              <span className={`inline-block px-3 py-1 text-[10px] tracking-wide font-medium uppercase rounded-sm ${STATUS_COLOURS[order.status] ?? "bg-gray-100 text-gray-600"}`}>
+                {order.status.replace(/_/g, " ")}
+              </span>
+              <p className="text-lg font-bold text-[#1a2744] mt-1">
+                ₹{((order.total_paise ?? 0) / 100).toLocaleString("en-IN")}
+              </p>
+            </div>
+          </div>
+
+          {/* Status timeline */}
+          <div className="space-y-0">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#1a2744]/50 font-medium mb-3">
+              Order Progress
             </p>
-          </div>
-
-          {/* Status progress */}
-          <div className="space-y-2">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[#1a2744]/50 font-medium">Status</p>
-
-            {order.status === "cancelled" ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm rounded-sm">
-                This order has been cancelled.
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                {STATUS_STEPS.map((step, i) => (
-                  <div key={step} className="flex-1 flex flex-col items-center gap-1">
-                    {/* Dot */}
-                    <div
-                      className={`w-3 h-3 rounded-full border-2 ${
-                        i <= currentStep
-                          ? "bg-[#c9a96e] border-[#c9a96e]"
-                          : "bg-white border-[#e8e0d0]"
-                      }`}
-                    />
-                    {/* Line */}
-                    {i < STATUS_STEPS.length - 1 && (
-                      <div
-                        className={`w-full h-0.5 ${
-                          i < currentStep ? "bg-[#c9a96e]" : "bg-[#e8e0d0]"
-                        }`}
-                      />
-                    )}
-                    {/* Label */}
-                    <p className={`text-[8px] tracking-wide text-center leading-tight ${
-                      i <= currentStep ? "text-[#1a2744] font-medium" : "text-[#1a2744]/30"
-                    }`}>
-                      {STATUS_LABELS[step] ?? step}
-                    </p>
+            <div className="flex items-center gap-2">
+              {STATUS_STEPS.map((step, i) => (
+                <div key={step.key} className="flex items-center gap-2 flex-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                    i <= activeStep
+                      ? "bg-[#c9a96e] text-white"
+                      : "bg-[#e8e0d0] text-[#1a2744]/30"
+                  }`}>
+                    {step.icon}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Items */}
-          <div className="border-t border-[#e8e0d0] pt-4">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[#1a2744]/50 font-medium mb-2">Items</p>
-            <div className="space-y-1 text-sm text-[#1a2744]/70">
-              {order.items?.map((item, i) => (
-                <p key={i}>
-                  {item.product_name} <span className="text-[#1a2744]/30">×{item.quantity}</span>
+                  {i < STATUS_STEPS.length - 1 && (
+                    <div className={`flex-1 h-0.5 ${i < activeStep ? "bg-[#c9a96e]" : "bg-[#e8e0d0]"}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex mt-2">
+              {STATUS_STEPS.map((step, i) => (
+                <p key={step.key} className={`flex-1 text-[9px] text-center ${i <= activeStep ? "text-[#1a2744]" : "text-[#1a2744]/30"}`}>
+                  {step.label}
                 </p>
               ))}
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-[#f5f0e8] border border-[#e8e0d0] p-3 text-xs text-[#1a2744]/60 leading-relaxed">
-            Questions about your order?{" "}
-            <a
-              href={`https://wa.me/918796134073?text=${encodeURIComponent(`Hi, I have a question about order ${order.order_number}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#c9a96e] hover:underline font-medium"
-            >
-              WhatsApp us
-            </a>
+          {/* Items */}
+          <div className="border-t border-[#e8e0d0] pt-4">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#1a2744]/50 font-medium mb-2">Items</p>
+            <div className="space-y-1">
+              {order.items?.map((item, i) => (
+                <p key={i} className="text-sm text-[#1a2744]">
+                  {item.product_name} <span className="text-[#1a2744]/40">×{item.quantity}</span>
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Shipping */}
+          {order.shipping_address && (
+            <div className="border-t border-[#e8e0d0] pt-4">
+              <p className="text-[10px] tracking-[0.2em] uppercase text-[#1a2744]/50 font-medium mb-1">Shipping To</p>
+              <p className="text-xs text-[#1a2744]">
+                {order.shipping_address.city}, {order.shipping_address.state} — {order.shipping_address.pincode}
+              </p>
+            </div>
+          )}
+
+          {/* Help */}
+          <div className="bg-[#f5f0e8] border border-[#e8e0d0] p-4 text-xs text-[#1a2744]/60">
+            Need help? <a href="https://wa.me/918796134073" target="_blank" rel="noopener noreferrer" className="text-[#c9a96e] hover:underline">WhatsApp us</a> with your order number.
           </div>
         </div>
       )}

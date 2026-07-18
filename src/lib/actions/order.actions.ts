@@ -261,7 +261,7 @@ export async function createUpiOrderAction(
     .from("orders")
     .insert({
       order_number: orderNumber,
-      status: "placed",
+      status: "created",
       customer_name: formData.name,
       customer_email: formData.email || "",
       customer_phone: formData.phone,
@@ -281,4 +281,42 @@ export async function createUpiOrderAction(
   }
 
   return { success: true, orderNumber };
+}
+
+// ─── Lookup order by order number (for guest tracking page) ──────────────────
+export async function lookupOrderAction(
+  orderNumber: string
+): Promise<{ success: boolean; order?: Record<string, unknown>; error?: string }> {
+  if (!orderNumber || orderNumber.length < 3) {
+    return { success: false, error: "Invalid order number." };
+  }
+
+  // Use service role to bypass RLS — guests need to track orders without auth
+  const { createServiceRoleClient } = await import("@/lib/supabase/server");
+  const supabase = createServiceRoleClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from("orders")
+    .select("order_number, status, customer_name, total_paise, items, created_at, shipping_address, payment_screenshot, transaction_id")
+    .eq("order_number", orderNumber.toUpperCase())
+    .single();
+
+  if (error || !data) {
+    return { success: false, error: "Order not found. Please check the number and try again." };
+  }
+
+  // Only return non-sensitive fields to the public
+  return {
+    success: true,
+    order: {
+      order_number: data.order_number,
+      status: data.status,
+      customer_name: data.customer_name,
+      total_paise: data.total_paise,
+      items: data.items,
+      created_at: data.created_at,
+      shipping_address: data.shipping_address,
+    },
+  };
 }

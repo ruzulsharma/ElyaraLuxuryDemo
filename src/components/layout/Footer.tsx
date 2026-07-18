@@ -81,6 +81,7 @@ export default function Footer() {
               { label: "Sustainability", href: "/about#sustainability" },
               { label: "Size Guide", href: "/size-guide" },
               { label: "Care Instructions", href: "/care-guide" },
+              { label: "Track Order", href: "/track-order" },
             ].map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="text-sm text-white/60 hover:text-white transition-colors">

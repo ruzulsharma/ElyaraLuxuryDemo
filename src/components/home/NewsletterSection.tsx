@@ -1,11 +1,14 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
+import { subscribeAction } from "@/lib/actions/subscriber.actions";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -13,8 +16,16 @@ export default function NewsletterSection() {
       setError("Please enter a valid email address.");
       return;
     }
-    setSubmitted(true);
-    setError("");
+
+    startTransition(async () => {
+      const result = await subscribeAction(email);
+      if (result.success) {
+        setSubmitted(true);
+        setError("");
+      } else {
+        setError(result.error ?? "Something went wrong.");
+      }
+    });
   };
 
   return (
@@ -52,9 +63,10 @@ export default function NewsletterSection() {
                 />
                 <button
                   type="submit"
-                  className="bg-[#c9a96e] text-[#1a2744] text-xs tracking-[0.25em] uppercase font-bold px-6 py-3.5 hover:bg-[#b8935a] transition-colors whitespace-nowrap"
+                  disabled={isPending}
+                  className="bg-[#c9a96e] text-[#1a2744] text-xs tracking-[0.25em] uppercase font-bold px-6 py-3.5 hover:bg-[#b8935a] transition-colors whitespace-nowrap disabled:opacity-60"
                 >
-                  Subscribe
+                  {isPending ? "Saving…" : "Subscribe"}
                 </button>
               </div>
               {error && (
