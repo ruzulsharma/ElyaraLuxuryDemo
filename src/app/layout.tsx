@@ -6,7 +6,6 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import CartSidebar from "@/components/cart/CartSidebar";
 import { CartProvider } from "@/context/CartContext";
 import PageIntro from "@/components/ui/PageIntro";
-import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -112,7 +111,6 @@ export default function RootLayout({
       </head>
       <body className="bg-[#faf8f4] text-[#1a2744] antialiased">
         <PageIntro />
-        <CustomCursor />
         <CartProvider>
           <Navbar />
           <CartSidebar />
